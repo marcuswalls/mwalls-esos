@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1exuv7h" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.5.0">
+  <bpmn:process id="PROCESS_NOTIFICATION_OF_COMPLIANCE_P3" name="Notification of compliance phase 3 process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="NOTIFICATION_OF_COMPLIANCE_P3_START_EVENT" name="Start Event">
+      <bpmn:outgoing>Flow_0oue52q</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="NOTIFICATION_OF_COMPLIANCE_P3_APPLICATION_SUBMIT" name="Operator: Submit notification of compliance">
+      <bpmn:incoming>Flow_0oue52q</bpmn:incoming>
+      <bpmn:incoming>Flow_1nbu5de</bpmn:incoming>
+      <bpmn:outgoing>Flow_1oj2lq6</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="NOTIFICATION_OF_COMPLIANCE_P3_END_EVENT" name="End Event">
+      <bpmn:incoming>Flow_0icacpp</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0oue52q" sourceRef="NOTIFICATION_OF_COMPLIANCE_P3_START_EVENT" targetRef="NOTIFICATION_OF_COMPLIANCE_P3_APPLICATION_SUBMIT" />
+    <bpmn:sequenceFlow id="Flow_1oj2lq6" sourceRef="NOTIFICATION_OF_COMPLIANCE_P3_APPLICATION_SUBMIT" targetRef="Gateway_0m5boq8" />
+    <bpmn:serviceTask id="Activity_0121xhp" name="Update Workflow status to COMPLETED" camunda:delegateExpression="#{requestUpdateStatusHandler}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="requestStatus">COMPLETED</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_13z047x</bpmn:incoming>
+      <bpmn:outgoing>Flow_0icacpp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0icacpp" sourceRef="Activity_0121xhp" targetRef="NOTIFICATION_OF_COMPLIANCE_P3_END_EVENT" />
+    <bpmn:callActivity id="EDIT_NOC" name="Edit NOC" calledElement="PROCESS_APPLICATION_EDIT_NOC">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{businessKey}" />
+        <camunda:in source="businessKey" target="businessKey" />
+        <camunda:in source="requestId" target="requestId" />
+        <camunda:in source="requestType" target="requestType" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_15woseh</bpmn:incoming>
+      <bpmn:outgoing>Flow_1nbu5de</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:exclusiveGateway id="Gateway_0m5boq8">
+      <bpmn:incoming>Flow_1oj2lq6</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ul61o8</bpmn:outgoing>
+      <bpmn:outgoing>Flow_15woseh</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1ul61o8" name="Submit NOC" sourceRef="Gateway_0m5boq8" targetRef="Activity_18drh6f">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${nocOutcome=='SUBMIT'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_15woseh" name="Edit NOC" sourceRef="Gateway_0m5boq8" targetRef="EDIT_NOC">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${nocOutcome=='SEND_TO_EDIT'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1nbu5de" sourceRef="EDIT_NOC" targetRef="NOTIFICATION_OF_COMPLIANCE_P3_APPLICATION_SUBMIT" />
+    <bpmn:sequenceFlow id="Flow_1naa6rn" sourceRef="Activity_18drh6f" targetRef="Activity_1v7m5sq" />
+    <bpmn:serviceTask id="Activity_18drh6f" name="Generate NOC document" camunda:delegateExpression="#{notificationOfComplianceP3GenerateDocumentHandler}">
+      <bpmn:incoming>Flow_1ul61o8</bpmn:incoming>
+      <bpmn:outgoing>Flow_1naa6rn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_108jki7" sourceRef="Activity_1v7m5sq" targetRef="Activity_0b09p9i" />
+    <bpmn:serviceTask id="Activity_1v7m5sq" name="Add submitted request action" camunda:delegateExpression="#{notificationOfComplianceP3AddSubmittedRequestActionHandler}">
+      <bpmn:incoming>Flow_1naa6rn</bpmn:incoming>
+      <bpmn:outgoing>Flow_108jki7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_13z047x" sourceRef="Activity_0b09p9i" targetRef="Activity_0121xhp" />
+    <bpmn:serviceTask id="Activity_0b09p9i" name="Send NOC document " camunda:delegateExpression="#{notificationOfComplianceP3SendDocumentHandler}">
+      <bpmn:incoming>Flow_108jki7</bpmn:incoming>
+      <bpmn:outgoing>Flow_13z047x</bpmn:outgoing>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="PROCESS_NOTIFICATION_OF_COMPLIANCE_P3">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="NOTIFICATION_OF_COMPLIANCE_P3_START_EVENT">
+        <dc:Bounds x="179" y="239" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="282" width="55" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1r03gnf_di" bpmnElement="NOTIFICATION_OF_COMPLIANCE_P3_APPLICATION_SUBMIT">
+        <dc:Bounds x="290" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_03e2r0z_di" bpmnElement="EDIT_NOC">
+        <dc:Bounds x="500" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0m5boq8_di" bpmnElement="Gateway_0m5boq8" isMarkerVisible="true">
+        <dc:Bounds x="705" y="232" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0121xhp_di" bpmnElement="Activity_0121xhp">
+        <dc:Bounds x="1410" y="217" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ucn2zx_di" bpmnElement="Activity_18drh6f">
+        <dc:Bounds x="930" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0o8ulv7_di" bpmnElement="NOTIFICATION_OF_COMPLIANCE_P3_END_EVENT">
+        <dc:Bounds x="1572" y="239" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1564" y="282" width="52" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0dnx7tj_di" bpmnElement="Activity_1v7m5sq">
+        <dc:Bounds x="1090" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_08f4ai3_di" bpmnElement="Activity_0b09p9i">
+        <dc:Bounds x="1250" y="217" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0oue52q_di" bpmnElement="Flow_0oue52q">
+        <di:waypoint x="215" y="257" />
+        <di:waypoint x="290" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1oj2lq6_di" bpmnElement="Flow_1oj2lq6">
+        <di:waypoint x="390" y="257" />
+        <di:waypoint x="705" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0icacpp_di" bpmnElement="Flow_0icacpp">
+        <di:waypoint x="1510" y="257" />
+        <di:waypoint x="1572" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ul61o8_di" bpmnElement="Flow_1ul61o8">
+        <di:waypoint x="755" y="257" />
+        <di:waypoint x="930" y="257" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="809" y="239" width="62" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15woseh_di" bpmnElement="Flow_15woseh">
+        <di:waypoint x="730" y="232" />
+        <di:waypoint x="730" y="120" />
+        <di:waypoint x="600" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="746" y="173" width="47" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1nbu5de_di" bpmnElement="Flow_1nbu5de">
+        <di:waypoint x="500" y="120" />
+        <di:waypoint x="350" y="120" />
+        <di:waypoint x="350" y="217" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1naa6rn_di" bpmnElement="Flow_1naa6rn">
+        <di:waypoint x="1030" y="257" />
+        <di:waypoint x="1090" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_108jki7_di" bpmnElement="Flow_108jki7">
+        <di:waypoint x="1190" y="257" />
+        <di:waypoint x="1250" y="257" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13z047x_di" bpmnElement="Flow_13z047x">
+        <di:waypoint x="1350" y="257" />
+        <di:waypoint x="1410" y="257" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

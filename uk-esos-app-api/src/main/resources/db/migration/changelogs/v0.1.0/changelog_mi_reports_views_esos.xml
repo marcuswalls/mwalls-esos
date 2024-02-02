@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/changelog_mi_reports.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+   <changeSet id="0_1_0_drop_ca_reporting_views_esos" author="P70453" runOrder="first" runAlways="true">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            drop view if exists sch_report_sepa.account_organisation cascade;
+
+            drop view if exists sch_report_opred.account_organisation cascade;
+
+            drop view if exists sch_report_nrw.account_organisation cascade;
+
+            drop view if exists sch_report_niea.account_organisation cascade;
+
+            drop view if exists sch_report_ea.account_organisation cascade;
+        </sql>
+        <rollback>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_create_ca_reporting_views_esos" author="P70453" runOrder="last" runAlways="true">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>
+            create or replace view sch_report_sepa.account_organisation as select acc_org.* from account_organisation acc_org join account acc on acc.id=acc_org.id where acc.competent_authority = 'SCOTLAND';
+
+            create or replace view sch_report_opred.account_organisation as select acc_org.* from account_organisation acc_org join account acc on acc.id=acc_org.id where acc.competent_authority = 'OPRED';
+
+            create or replace view sch_report_nrw.account_organisation as select acc_org.* from account_organisation acc_org join account acc on acc.id=acc_org.id where acc.competent_authority = 'WALES';
+
+            create or replace view sch_report_niea.account_organisation as select acc_org.* from account_organisation acc_org join account acc on acc.id=acc_org.id where acc.competent_authority = 'NORTHERN_IRELAND';
+
+            create or replace view sch_report_ea.account_organisation as select acc_org.* from account_organisation acc_org join account acc on acc.id=acc_org.id where acc.competent_authority = 'ENGLAND';
+        </sql>
+        <rollback/>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/changelog_account_organisation.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="0_1_0_ACCOUNT_ORGANISATION_CREATE_SEQUENCE" author="pafilisa@unisystems.gr">
+        <createSequence sequenceName="account_organisation_seq" minValue="0" maxValue="999999999999999999"
+                        incrementBy="1" startValue="1" cycle="false"/>
+        <rollback>
+            <sql>
+                DROP SEQUENCE IF EXISTS account_organisation_seq;
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_ACCOUNT_ORGANISATION_CREATE_TABLE" author="pafilisa@unisystems.gr">
+        <createTable tableName="account_organisation"
+                     remarks="Represents an organisation account">
+            <column name="id" type="bigint" remarks="The account id">
+                <constraints foreignKeyName="account_organisation_account_fk" references="account(id)" nullable="false"
+                             primaryKey="true" primaryKeyName="account_organisation_pk" />
+            </column>
+            <column name="registration_number" type="varchar(255)" />
+            <column name="organisation_id" type="varchar(9)">
+                <constraints nullable="false" />
+            </column>
+            <column name="status" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="address_line1" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="address_line2" type="varchar(255)" />
+            <column name="city" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="county" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="postcode" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <rollback>
+            <sql>
+                DROP TABLE IF EXISTS account_organisation CASCADE;
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_CREATE_INDEXES_FOR_ACCOUNT_ORGANISATION_SEARCHABLE_COLUMNS" author="P64333">
+        <validCheckSum>1:any</validCheckSum>
+        <sql>
+            CREATE INDEX trgm_gin_idx_account_organisation_registration_number ON account_organisation USING gin (registration_number gin_trgm_ops);
+            CREATE INDEX trgm_gin_idx_account_organisation_organisation_id ON account_organisation USING gin (organisation_id gin_trgm_ops);
+        </sql>
+        <rollback>
+            <sql>
+                DROP INDEX trgm_gin_idx_account_organisation_registration_number;
+                DROP INDEX trgm_gin_idx_account_organisation_organisation_id;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

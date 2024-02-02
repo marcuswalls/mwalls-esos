@@ -1,0 +1,5 @@
+<ng-container *ngIf="vm() as vm">
+  <esos-page-heading size="xl">Reporting obligation</esos-page-heading>
+
+  <esos-reporting-obligation-summary-page *ngIf="vm.data" [data]="vm.data"></esos-reporting-obligation-summary-page>
+</ng-container>

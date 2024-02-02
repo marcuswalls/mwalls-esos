@@ -1,0 +1,51 @@
+<esos-cookies-container *ngIf="(showCookiesBanner$ | async) === true"></esos-cookies-container>
+<govuk-header title="Manage your ESOS reporting">
+  <govuk-skip-link></govuk-skip-link>
+  <govuk-header-actions-list>
+    <a *ngIf="isLoggedIn$ | async" class="govuk-header__link" routerLink="." (click)="authService.logout()">
+      Sign out
+    </a>
+  </govuk-header-actions-list>
+  <govuk-header-nav-list
+    *ngIf="permissions$ | async as permissions"
+    identifier="navigation"
+    ariaLabel="Primary navigation"
+  >
+    <a
+      govukLink="header"
+      *ngIf="permissions.showRegulators || permissions.showAuthorizedOperators"
+      [routerLink]="['/dashboard']"
+    >
+      Tasks
+    </a>
+    <a
+      govukLink="header"
+      *ngIf="permissions.showRegulators || permissions.showAuthorizedOperators"
+      [routerLink]="['/accounts']"
+    >
+      Accounts
+    </a>
+    <a govukLink="header" *ngIf="permissions.showRegulators" [routerLink]="['/user/regulators']"> Regulator users </a>
+    <a govukLink="header" *ngIf="permissions.showRegulators" [routerLink]="['/templates']"> Templates </a>
+    <a govukLink="header" *ngIf="permissions.showRegulators" [routerLink]="['/mi-reports']"> MI Reports </a>
+  </govuk-header-nav-list>
+</govuk-header>
+
+<main class="govuk-width-container" id="main-content" role="main">
+  <esos-phase-bar></esos-phase-bar>
+  <esos-breadcrumbs></esos-breadcrumbs>
+  <esos-identity-bar></esos-identity-bar>
+  <esos-back-link></esos-back-link>
+  <div class="govuk-main-wrapper">
+    <router-outlet esosSkipLinkFocus></router-outlet>
+  </div>
+</main>
+<govuk-footer>
+  <govuk-footer-meta-info>
+    <a govukLink="meta" routerLink="/privacy-notice"> Privacy Νotice </a>
+    <a govukLink="meta" routerLink="/contact-us"> Contact us </a>
+    <a govukLink="meta" routerLink="/accessibility"> Accessibility Statement </a>
+    <a govukLink="meta" routerLink="/legislation"> UK ETS legislation </a>
+  </govuk-footer-meta-info>
+</govuk-footer>
+<esos-timeout-banner></esos-timeout-banner>

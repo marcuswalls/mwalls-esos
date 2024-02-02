@@ -1,0 +1,5 @@
+<ng-container *ngIf="vm() as vm">
+  <esos-organisation-account-summary [organisation]="vm.accountDetails" [isEditable]="false" [canChangeCA]="false" />
+
+  <esos-participant-user-details [organisationParticipantDetails]="vm.userDetails" />
+</ng-container>

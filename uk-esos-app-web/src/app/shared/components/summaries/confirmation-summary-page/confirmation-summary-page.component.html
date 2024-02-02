@@ -1,0 +1,456 @@
+<ng-container *ngIf="confirmation?.responsibilityAssessmentTypes">
+  <h2 class="govuk-heading-m">Confirm that a responsible officer...</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        has reviewed the recommendations of your organisation's ESOS assessment or alternative routes to compliance
+        (e.g. ISO 50001)
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibilityAssessmentTypes?.includes('REVIEWED_THE_RECOMMENDATIONS') ? 'Yes' : 'No' }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_ASSESSMENT_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that the organisation is within the scope of the scheme
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.responsibilityAssessmentTypes?.includes('SATISFIED_WITH_ORGANISATION_WITHIN_SCOPE_OF_THE_SCHEME')
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_ASSESSMENT_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that the organisation is compliant with the scheme
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.responsibilityAssessmentTypes?.includes(
+            'SATISFIED_WITH_ORGANISATION_COMPLIANT_WITH_SCOPE_OF_THE_SCHEME'
+          )
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_ASSESSMENT_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that relevant sections of the ESOS report, and supporting
+        information where relevant, have been shared with all undertakings in the corporate group, unless there is a
+        declared reason why this is prohibited by law
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.responsibilityAssessmentTypes?.includes(
+            'SATISFIED_WITH_INFORMATION_PROVIDED_UNLESS_THERE_IS_A_DECLARED_REASON'
+          )
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_ASSESSMENT_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that the information provided in this notification is correct
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibilityAssessmentTypes?.includes('SATISFIED_WITH_INFORMATION_PROVIDED') ? 'Yes' : 'No' }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_ASSESSMENT_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="confirmation?.noEnergyResponsibilityAssessmentTypes">
+  <h2 class="govuk-heading-m">
+    Confirm that the organisation has no energy responsibility, despite qualifying for the scheme, and that the board
+    director...
+  </h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that the organisation is within the scope of the scheme
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.noEnergyResponsibilityAssessmentTypes?.includes(
+            'SATISFIED_WITH_ORGANISATION_WITHIN_SCOPE_OF_THE_SCHEME'
+          )
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_NO_ENERGY_ASSESSMENT_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that the organisation is compliant with the scheme
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.noEnergyResponsibilityAssessmentTypes?.includes(
+            'SATISFIED_WITH_ORGANISATION_COMPLIANT_WITH_SCOPE_OF_THE_SCHEME'
+          )
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_NO_ENERGY_ASSESSMENT_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that the information provided in this notification is correct
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.noEnergyResponsibilityAssessmentTypes?.includes('SATISFIED_WITH_INFORMATION_PROVIDED')
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_NO_ENERGY_ASSESSMENT_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="confirmation?.responsibleOfficerDetails">
+  <h2 class="govuk-heading-m">Details of the responsible officer</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>First name</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.firstName }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Last name</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.lastName }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Job title</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.jobTitle }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Email address</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.email }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Address</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.line1 }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <ng-container *ngIf="confirmation?.responsibleOfficerDetails?.line2">
+      <div govukSummaryListRow>
+        <dt govukSummaryListRowKey>Address 2</dt>
+        <dd govukSummaryListRowValue>
+          {{ confirmation.responsibleOfficerDetails.line2 }}
+        </dd>
+        <dd govukSummaryListRowActions *ngIf="isEditable">
+          <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+        </dd>
+      </div>
+    </ng-container>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Town or city</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.city }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>County</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.county }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Postcode</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.postcode }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Phone number 1</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.phoneNumber.countryCode | phoneNumber }}
+        {{ confirmation.responsibleOfficerDetails.phoneNumber.number }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Phone number 2</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.responsibleOfficerDetails.mobileNumber.countryCode | phoneNumber }}
+        {{ confirmation.responsibleOfficerDetails.mobileNumber.number }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="confirmation?.reviewAssessmentDate">
+  <h2 class="govuk-heading-m">When did the board director review the ESOS assessment recommendations?</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>{{ confirmation.reviewAssessmentDate | govukDate }}</dt>
+      <dd govukSummaryListRowValue></dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a govukLink [routerLink]="[wizardStep.STEP_ASSESSMENT_DATE]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="confirmation?.secondResponsibleOfficerEnergyTypes">
+  <h2 class="govuk-heading-m">Confirm that a second responsible officer...</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        has reviewed the recommendations of your organisation's ESOS assessment or alternative routes to compliance
+        (e.g. ISO 50001)
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerEnergyTypes?.includes('REVIEWED_THE_RECOMMENDATIONS') ? 'Yes' : 'No' }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that the organisation is within the scope of the scheme
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.secondResponsibleOfficerEnergyTypes?.includes(
+            'SATISFIED_WITH_ORGANISATION_WITHIN_SCOPE_OF_THE_SCHEME'
+          )
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that the organisation is compliant with the scheme
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.secondResponsibleOfficerEnergyTypes?.includes(
+            'SATISFIED_WITH_ORGANISATION_COMPLIANT_WITH_SCOPE_OF_THE_SCHEME'
+          )
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        Is satisfied, to the best of their knowledge, that relevant sections of the ESOS report, and supporting
+        information where relevant, have been shared with all undertakings in the corporate group, unless there is a
+        declared reason why this is prohibited by law
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.secondResponsibleOfficerEnergyTypes?.includes(
+            'SATISFIED_WITH_INFORMATION_PROVIDED_UNLESS_THERE_IS_A_DECLARED_REASON'
+          )
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        is satisfied, to the best of their knowledge, that the information provided in this notification is correct
+      </dt>
+      <dd govukSummaryListRowValue>
+        {{
+          confirmation.secondResponsibleOfficerEnergyTypes?.includes('SATISFIED_WITH_INFORMATION_PROVIDED')
+            ? 'Yes'
+            : 'No'
+        }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_TYPES]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="confirmation?.secondResponsibleOfficerDetails">
+  <h2 class="govuk-heading-m">Details of the second responsible officer</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>First name</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.firstName }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Last name</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.lastName }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Job title</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.jobTitle }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Email address</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.email }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Address</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.line1 }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <ng-container *ngIf="confirmation?.secondResponsibleOfficerDetails?.line2">
+      <div govukSummaryListRow>
+        <dt govukSummaryListRowKey>Address 2</dt>
+        <dd govukSummaryListRowValue>
+          {{ confirmation.secondResponsibleOfficerDetails.line2 }}
+        </dd>
+        <dd govukSummaryListRowActions *ngIf="isEditable">
+          <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+        </dd>
+      </div>
+    </ng-container>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Town or city</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.city }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>County</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.county }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Postcode</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.postcode }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Phone number 1</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.phoneNumber.countryCode | phoneNumber }}
+        {{ confirmation.secondResponsibleOfficerDetails.phoneNumber.number }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Phone number 2</dt>
+      <dd govukSummaryListRowValue>
+        {{ confirmation.secondResponsibleOfficerDetails.mobileNumber.countryCode | phoneNumber }}
+        {{ confirmation.secondResponsibleOfficerDetails.mobileNumber.number }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.STEP_SECOND_OFFICER_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>

@@ -1,0 +1,22 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Do you want to add more information to give context to the energy intensity ratio?"
+  caption="Energy consumption"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <div formControlName="additionalInformationExists" govuk-radio>
+    <govuk-radio-option [value]="true" label="Yes">
+      <ng-container govukConditionalContent>
+        <div
+          formControlName="additionalInformation"
+          label="Enter the additional information"
+          govuk-textarea
+          [maxLength]="10000"
+        ></div>
+      </ng-container>
+    </govuk-radio-option>
+    <govuk-radio-option [value]="false" label="No"></govuk-radio-option>
+  </div>
+</esos-wizard-step>

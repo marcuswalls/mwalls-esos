@@ -1,0 +1,12 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Primary contact details"
+  caption="Contact persons"
+  submitText="Save and continue"
+  [hideSubmit]="!isEditable()"
+>
+  <h3 class="govuk-heading-s">Name</h3>
+
+  <esos-user-input phoneType="full" [isNotification]="true"></esos-user-input>
+</esos-wizard-step>

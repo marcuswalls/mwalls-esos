@@ -1,0 +1,18 @@
+<esos-page-heading size="xl">MI Reports</esos-page-heading>
+
+<div class="overflow-auto overflow-auto-table govuk-!-padding-1">
+  <govuk-table [columns]="tableColumns" [data]="currentPageData$ | async">
+    <ng-template let-column="column" let-row="row">
+      <ng-container [ngSwitch]="column.field">
+        <ng-container *ngSwitchDefault>
+          <a [routerLink]="miReportTypeLinkMap[row.miReportType]" govukLink>{{ row[column.field] }}</a>
+        </ng-container>
+      </ng-container>
+    </ng-template>
+  </govuk-table>
+  <esos-pagination
+    (currentPageChange)="currentPage$.next($event)"
+    [count]="totalPages$ | async"
+    [pageSize]="pageSize"
+  ></esos-pagination>
+</div>

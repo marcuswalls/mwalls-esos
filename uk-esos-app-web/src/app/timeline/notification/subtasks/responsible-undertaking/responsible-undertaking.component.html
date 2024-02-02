@@ -1,0 +1,9 @@
+<ng-container *ngIf="vm() as vm">
+  <esos-page-heading size="xl">{{ vm.responsibleUndertakingMap.title }}</esos-page-heading>
+
+  <esos-responsible-undertaking-summary-page
+    *ngIf="vm.data"
+    [responsibleUndertaking]="vm.data"
+    [responsibleUndertakingMap]="vm.responsibleUndertakingMap"
+  ></esos-responsible-undertaking-summary-page>
+</ng-container>

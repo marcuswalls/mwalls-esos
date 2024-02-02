@@ -1,0 +1,25 @@
+<dl govuk-summary-list>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Certificate number</dt>
+    <dd govukSummaryListRowValue>{{ certificateDetails.certificateNumber }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Valid from</dt>
+    <dd govukSummaryListRowValue>{{ certificateDetails.validFrom | govukDate }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Valid until</dt>
+    <dd govukSummaryListRowValue>{{ certificateDetails.validUntil | govukDate }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+</dl>

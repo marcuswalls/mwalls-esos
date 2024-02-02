@@ -1,0 +1,12 @@
+<h2 class="govuk-heading-m">
+  What is the estimate of the total energy savings achieved during the third compliance period?
+</h2>
+
+<dl govuk-summary-list>
+  <div govukSummaryListRow>
+    <dd govukSummaryListRowValue>{{ totalEnergySavingsEstimation }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+</dl>

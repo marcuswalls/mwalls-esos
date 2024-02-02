@@ -1,0 +1,131 @@
+<ng-container *ngIf="responsibleUndertaking?.organisationDetails">
+  <h2 class="govuk-heading-m">{{ responsibleUndertakingMap.organisationDetails.title }}</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Organisation name</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.organisationDetails.name }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.ORGANISATION_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Registration number</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.organisationDetails.registrationNumber }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.ORGANISATION_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Address line 1</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.organisationDetails.line1 }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.ORGANISATION_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Address line 2</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.organisationDetails.line2 }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.ORGANISATION_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Town or city</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.organisationDetails.city }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.ORGANISATION_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>County</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.organisationDetails.county }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.ORGANISATION_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Postcode</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.organisationDetails.postcode }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[wizardStep.ORGANISATION_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="responsibleUndertaking?.tradingDetails">
+  <h2 class="govuk-heading-m">{{ responsibleUndertakingMap.tradingDetails.title }}</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>
+        {{ responsibleUndertaking.tradingDetails.exist | booleanToText }} <br />
+        {{ responsibleUndertaking.tradingDetails.tradingName }}
+      </dt>
+      <dd govukSummaryListRowValue></dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a govukLink [routerLink]="[wizardStep.TRADING_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="responsibleUndertaking?.organisationContactDetails">
+  <h2 class="govuk-heading-m">{{ responsibleUndertakingMap.organisationContactDetails.title }}</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Email address</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.organisationContactDetails.email }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a govukLink [routerLink]="[wizardStep.ORGANISATION_CONTACT_DETAILS]" [queryParams]="{ change: true }"
+          >Change</a
+        >
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Telephone number</dt>
+      <dd govukSummaryListRowValue>
+        {{ responsibleUndertaking.organisationContactDetails.phoneNumber.countryCode }}
+        {{ responsibleUndertaking.organisationContactDetails.phoneNumber.number }}
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a govukLink [routerLink]="[wizardStep.ORGANISATION_CONTACT_DETAILS]" [queryParams]="{ change: true }"
+          >Change</a
+        >
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<!-- eslint-disable-next-line @angular-eslint/template/eqeqeq -->
+<ng-container *ngIf="responsibleUndertaking?.hasOverseasParentDetails != null">
+  <h2 class="govuk-heading-m">{{ responsibleUndertakingMap.hasOverseasParentDetails.title }}</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>{{ responsibleUndertaking.hasOverseasParentDetails | booleanToText }}</dt>
+      <dd govukSummaryListRowValue></dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a govukLink [routerLink]="[wizardStep.HAS_OVERSEAS_PARENT_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="responsibleUndertaking?.overseasParentDetails">
+  <h2 class="govuk-heading-m">{{ responsibleUndertakingMap.overseasParentDetails.title }}</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Parent company name</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.overseasParentDetails.name }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a govukLink [routerLink]="[wizardStep.OVERSEAS_PARENT_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Parent company trading name</dt>
+      <dd govukSummaryListRowValue>{{ responsibleUndertaking.overseasParentDetails.tradingName }}</dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a govukLink [routerLink]="[wizardStep.OVERSEAS_PARENT_DETAILS]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>

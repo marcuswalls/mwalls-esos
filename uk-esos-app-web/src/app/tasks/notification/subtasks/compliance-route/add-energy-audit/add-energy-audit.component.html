@@ -1,0 +1,40 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Enter the energy audit details"
+  caption="Compliance route"
+  submitText="Save and continue"
+  [hideSubmit]="!isEditable"
+>
+  <div class="govuk-body">
+    <div
+      formControlName="description"
+      govuk-textarea
+      label="Explain where the audit took place and what was covered"
+      [maxLength]="10000"
+    ></div>
+
+    <div
+      formControlName="numberOfSitesCovered"
+      govuk-text-input
+      [inputType]="'number'"
+      label="Number of sites covered by the audit"
+      widthClass="govuk-!-width-one-third"
+    ></div>
+
+    <div
+      formControlName="numberOfSitesVisited"
+      govuk-text-input
+      [inputType]="'number'"
+      label="Number of sites visited"
+      widthClass="govuk-!-width-one-third"
+    ></div>
+
+    <div
+      formControlName="reason"
+      govuk-textarea
+      label="Reason why are the sites visited for the energy audit considered to be representative of how energy is used by the assets and activities covered by the energy audit during the period covered by the audit"
+      [maxLength]="10000"
+    ></div>
+  </div>
+</esos-wizard-step>

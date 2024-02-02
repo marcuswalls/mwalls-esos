@@ -1,0 +1,10 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Explain why the disclosure of these parts of the ESOS report, or supporting information, is prohibited by law."
+  caption="Compliance route"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <div formControlName="partsProhibitedFromDisclosingReason" govuk-textarea [maxLength]="10000"></div>
+</esos-wizard-step>

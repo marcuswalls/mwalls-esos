@@ -1,0 +1,19 @@
+<esos-page-heading caption="Contact persons">Check your answers</esos-page-heading>
+
+<ng-container *ngIf="vm() as vm">
+  <esos-contact-persons-summary-page
+    [data]="vm.data"
+    [isEditable]="vm.isEditable"
+    [queryParams]="{ change: true }"
+    [changeLink]="vm.wizardStep"
+  ></esos-contact-persons-summary-page>
+
+  <button
+    *ngIf="vm.sectionsCompleted[vm.subtaskName] !== 'COMPLETED' && vm.isEditable"
+    (click)="submit()"
+    govukButton
+    type="button"
+  >
+    Confirm and continue
+  </button>
+</ng-container>

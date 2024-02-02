@@ -1,0 +1,23 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Send notification for review"
+  submitText="Confirm and send"
+  [hideSubmit]="false"
+>
+  <div
+    govuk-select
+    label="Select a user to edit notification details"
+    formControlName="user"
+    [options]="candidateAssignees()"
+    widthClass="govuk-!-width-one-third"
+  ></div>
+
+  <p class="govuk-body">
+    By selecting 'Confirm and send', you confirm that this notification will be sent to another user who can edit the
+    notification details. {{ requestId() }}
+  </p>
+  <p class="govuk-body">
+    Once you send this notification, you will not be able to make any changes unless it is returned to you.
+  </p>
+</esos-wizard-step>

@@ -1,0 +1,13 @@
+<ng-container *ngIf="vm() as vm">
+  <esos-page-heading [caption]="contentMap.title">Check your answers</esos-page-heading>
+
+  <esos-reporting-obligation-summary-page
+    *ngIf="vm.data"
+    [data]="vm.data"
+    [isEditable]="vm.isEditable"
+  ></esos-reporting-obligation-summary-page>
+
+  <button *ngIf="vm.status !== 'COMPLETED' && vm.isEditable" (click)="submit()" govukButton type="button">
+    Confirm and continue
+  </button>
+</ng-container>

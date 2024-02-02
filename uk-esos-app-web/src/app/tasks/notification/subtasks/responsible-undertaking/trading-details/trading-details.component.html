@@ -1,0 +1,17 @@
+<esos-wizard-step
+  [formGroup]="form"
+  [heading]="responsibleUndertakingMap.tradingDetails.title"
+  [caption]="responsibleUndertakingMap.title"
+  (formSubmit)="onSubmit()"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <div formControlName="exist" govuk-radio>
+    <govuk-radio-option [value]="true" label="Yes">
+      <ng-container govukConditionalContent>
+        <div formControlName="tradingName" govuk-text-input label="Trading name or other name" widthClass="govuk-!-width-two-thirds"></div>
+      </ng-container>
+    </govuk-radio-option>
+    <govuk-radio-option [value]="false" label="No"></govuk-radio-option>
+  </div>
+</esos-wizard-step>

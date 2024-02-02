@@ -1,0 +1,13 @@
+<ng-container *ngIf="isEditable()">
+  <esos-organisation-account-review-decision></esos-organisation-account-review-decision>
+</ng-container>
+
+<esos-organisation-account-summary
+  [organisation]="organisationTaskPayload().account"
+  [canChangeCA]="false"
+  [isEditable]="isEditable()"
+>
+</esos-organisation-account-summary>
+
+<esos-participant-user-details [organisationParticipantDetails]="organisationTaskPayload().participantDetails">
+</esos-participant-user-details>

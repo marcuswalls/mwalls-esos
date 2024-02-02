@@ -1,0 +1,55 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="What is the energy intensity ratio for each organisational purpose?"
+  caption="Energy consumption"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <h2 class="govuk-heading-m">Buildings</h2>
+  <esos-energy-intensity-ratio-input
+    formGroupName="buildingsIntensityRatio"
+    [hasAdditionalInfo]="true"
+  ></esos-energy-intensity-ratio-input>
+
+  <h2 class="govuk-heading-m">Transport</h2>
+
+  <h3 class="govuk-heading-s">Freights</h3>
+  <esos-energy-intensity-ratio-input formGroupName="freightsIntensityRatio"></esos-energy-intensity-ratio-input>
+
+  <h3 class="govuk-heading-s">Passengers</h3>
+  <esos-energy-intensity-ratio-input
+    formGroupName="passengersIntensityRatio"
+    [hasAdditionalInfo]="true"
+  ></esos-energy-intensity-ratio-input>
+
+  <h2 class="govuk-heading-m">Industrial processes</h2>
+  <esos-energy-intensity-ratio-input
+    formGroupName="industrialProcessesIntensityRatio"
+    [hasAdditionalInfo]="true"
+  ></esos-energy-intensity-ratio-input>
+
+  <h2 class="govuk-heading-m">Other</h2>
+  <ng-container *ngIf="otherProcessesIntensityRatiosFormArray.length > 0; else addOther">
+    <div formArrayName="otherProcessesIntensityRatios">
+      <div *ngFor="let otherGroup of otherProcessesIntensityRatiosFormArray; index as i">
+        <esos-energy-intensity-ratio-input [formGroupName]="i" [hasAdditionalInfo]="true">
+          <div govuk-text-input label="Title" formControlName="name"></div>
+        </esos-energy-intensity-ratio-input>
+        <p class="govuk-body">
+          <a class="govuk-link" [routerLink]="[]" (click)="deleteRatioGroup(i)">Remove organisational purpose</a>
+        </p>
+      </div>
+    </div>
+
+    <button govukSecondaryButton type="button" (click)="addOtherRatioGroup()">
+      Add another organisational purpose
+    </button>
+  </ng-container>
+
+  <ng-template #addOther>
+    <div>
+      <button govukSecondaryButton type="button" (click)="addOtherRatioGroup()">Add other organisational purpose</button>
+    </div>
+  </ng-template>
+</esos-wizard-step>

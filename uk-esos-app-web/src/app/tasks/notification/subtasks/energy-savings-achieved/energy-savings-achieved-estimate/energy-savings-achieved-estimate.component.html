@@ -1,0 +1,15 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="What is the breakdown of an estimate of energy savings achieved during the compliance period, which for the third compliance period is 6 December 2019 to 5 December 2023?"
+  caption="Energy savings achieved"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <esos-energy-consumption-input></esos-energy-consumption-input>
+
+  <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible" />
+
+  <h2 class="govuk-heading-s govuk-!-margin-bottom-0">Total</h2>
+  <p class="govuk-body">{{ totalkWh() }} kWh</p>
+</esos-wizard-step>

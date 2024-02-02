@@ -1,0 +1,10 @@
+<esos-wizard-step
+  [formGroup]="form"
+  [heading]="contentMap.noQualificationReason.title"
+  [caption]="contentMap.title"
+  (formSubmit)="submit()"
+  submitText="Save and continue"
+  [hideSubmit]="!isEditable"
+>
+  <div govuk-textarea formControlName="noQualificationReason" [maxLength]="10000"></div>
+</esos-wizard-step>

@@ -1,0 +1,5 @@
+<ng-container *ngIf="vm() as vm">
+  <esos-page-heading size="xl">Contact persons</esos-page-heading>
+
+  <esos-contact-persons-summary-page *ngIf="vm.data" [data]="vm.data"></esos-contact-persons-summary-page>
+</ng-container>

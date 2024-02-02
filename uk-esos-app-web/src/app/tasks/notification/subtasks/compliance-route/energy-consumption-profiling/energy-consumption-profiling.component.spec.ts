@@ -1,0 +1,119 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
+
+import { TaskService } from '@common/forms/services/task.service';
+import { RequestTaskStore } from '@common/request-task/+state';
+import { NotificationTaskPayload } from '@tasks/notification/notification.types';
+import { NotificationService } from '@tasks/notification/services/notification.service';
+import { mockComplianceRoute, mockNotificationRequestTask } from '@tasks/notification/testing/mock-data';
+import { ActivatedRouteStub, BasePage, MockType } from '@testing';
+
+import { EnergyConsumptionProfilingComponent } from './energy-consumption-profiling.component';
+
+describe('EnergyConsumptionProfilingComponent', () => {
+  let component: EnergyConsumptionProfilingComponent;
+  let fixture: ComponentFixture<EnergyConsumptionProfilingComponent>;
+  let store: RequestTaskStore;
+  let page: Page;
+
+  const route = new ActivatedRouteStub();
+
+  const taskService: MockType<NotificationService> = {
+    saveSubtask: jest.fn().mockImplementation(),
+    get payload(): NotificationTaskPayload {
+      return {
+        noc: {
+          complianceRoute: mockComplianceRoute,
+        } as any,
+      };
+    },
+  };
+
+  class Page extends BasePage<EnergyConsumptionProfilingComponent> {
+    get heading(): HTMLHeadingElement {
+      return this.query<HTMLHeadingElement>('h1');
+    }
+    get energyConsumptionProfilingUsedRadios() {
+      return this.queryAll<HTMLInputElement>('input[name$="energyConsumptionProfilingUsed"]');
+    }
+    get conditionalContent() {
+      return this.query<HTMLDivElement>('.govuk-radios__conditional');
+    }
+    get submitButton() {
+      return this.query<HTMLButtonElement>('button[type="submit"]');
+    }
+    get errorSummary() {
+      return this.query<HTMLDivElement>('govuk-error-summary');
+    }
+    get errors() {
+      return this.queryAll<HTMLLIElement>('ul.govuk-error-summary__list > li');
+    }
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        RequestTaskStore,
+        { provide: ActivatedRoute, useValue: route },
+        { provide: TaskService, useValue: taskService },
+      ],
+    });
+
+    store = TestBed.inject(RequestTaskStore);
+    store.setState(mockNotificationRequestTask);
+
+    fixture = TestBed.createComponent(EnergyConsumptionProfilingComponent);
+    component = fixture.componentInstance;
+    page = new Page(fixture);
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should render all elements, no errors and no conditional content', () => {
+    expect(page.errorSummary).toBeFalsy();
+    expect(page.heading).toBeTruthy();
+    expect(page.heading.textContent.trim()).toEqual(
+      'Did this organisation use energy consumption profiling for the purpose of analysing its energy consumption for all ESOS energy audits?',
+    );
+    expect(page.conditionalContent.classList.contains('govuk-radios__conditional--hidden')).toBeTruthy();
+    expect(page.submitButton).toBeTruthy();
+  });
+
+  it('should show errors if no option is selected', () => {
+    const taskServiceSpy = jest.spyOn(taskService, 'saveSubtask');
+    page.submitButton.click();
+    fixture.detectChanges();
+
+    expect(page.errorSummary).toBeTruthy();
+    expect(page.errors.map((error) => error.textContent.trim())).toEqual(['Select an option']);
+    expect(taskServiceSpy).not.toHaveBeenCalled();
+  });
+
+  it('should select "Not applicable", render conditional content, submit and navigate to next page', () => {
+    const taskServiceSpy = jest.spyOn(taskService, 'saveSubtask');
+
+    page.energyConsumptionProfilingUsedRadios[2].click();
+    fixture.detectChanges();
+    expect(page.conditionalContent.classList.contains('govuk-radios__conditional--hidden')).toBeFalsy();
+
+    page.submitButton.click();
+    fixture.detectChanges();
+
+    expect(taskServiceSpy).toHaveBeenCalledWith({
+      subtask: 'complianceRoute',
+      currentStep: 'energyConsumptionProfiling',
+      route: route,
+      payload: {
+        noc: {
+          complianceRoute: {
+            ...mockComplianceRoute,
+            energyConsumptionProfilingUsed: 'NOT_APPLICABLE',
+          },
+        },
+      },
+    });
+  });
+});

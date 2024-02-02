@@ -1,0 +1,69 @@
+<ng-container *ngIf="data?.totalEnergyConsumptionReduction">
+  <h2 class="govuk-heading-m">{{ alternativeComplianceRoutesMap.totalEnergyConsumptionReduction.title }}</h2>
+  <esos-total-energy-consumption-reduction-summary-template
+    [totalEnergyConsumptionReduction]="data.totalEnergyConsumptionReduction"
+    [isEditable]="isEditable"
+    [queryParams]="queryParams"
+    [changeLink]="changeLink?.TOTAL_ENERGY_CONSUMPTION_REDUCTION"
+  ></esos-total-energy-consumption-reduction-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.energyConsumptionReduction">
+  <h2 class="govuk-heading-m">{{ alternativeComplianceRoutesMap.energyConsumptionReduction.title }}</h2>
+  <esos-energy-consumption-details-summary-template
+    [energyConsumption]="data.energyConsumptionReduction"
+    [isEditable]="isEditable"
+    [queryParams]="queryParams"
+    [changeLink]="changeLink?.ENERGY_CONSUMPTION_REDUCTION"
+  ></esos-energy-consumption-details-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.energyConsumptionReductionCategories">
+  <h2 class="govuk-heading-m">{{ alternativeComplianceRoutesMap.energyConsumptionReductionCategories.title }}</h2>
+  <esos-energy-saving-categories-details-summary-template
+    [energySavingsCategories]="data.energyConsumptionReductionCategories"
+    [isEditable]="isEditable"
+    [queryParams]="queryParams"
+    [changeLink]="changeLink?.ENERGY_CONSUMPTION_REDUCTION_CATEGORIES"
+  ></esos-energy-saving-categories-details-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.assets">
+  <h2 class="govuk-heading-m">{{ alternativeComplianceRoutesMap.assets.title }}</h2>
+  <esos-assets-summary-template
+    [assets]="data.assets"
+    [isEditable]="isEditable"
+    [queryParams]="queryParams"
+    [changeLink]="changeLink?.ASSETS"
+  ></esos-assets-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.iso50001CertificateDetails">
+  <h2 class="govuk-heading-m">{{ alternativeComplianceRoutesMap.iso50001CertificateDetails.title }}</h2>
+  <esos-certificate-details-summary-template
+    [certificateDetails]="data.iso50001CertificateDetails"
+    [isEditable]="isEditable"
+    [queryParams]="queryParams"
+    [changeLink]="changeLink?.ISO_50001_CERTIFICATE_DETAILS"
+  ></esos-certificate-details-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.decCertificatesDetails?.certificateDetails">
+  <h2 class="govuk-heading-m">{{ alternativeComplianceRoutesMap.decCertificatesDetails.title }}</h2>
+  <esos-certificate-details-list-summary-template
+    [certificatesDetails]="data.decCertificatesDetails.certificateDetails"
+    [isEditable]="isEditable"
+    [queryParams]="queryParams"
+    [changeLink]="changeLink?.DEC_CERTIFICATES_DETAILS"
+  ></esos-certificate-details-list-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.gdaCertificatesDetails?.certificateDetails">
+  <h2 class="govuk-heading-m">{{ alternativeComplianceRoutesMap.gdaCertificatesDetails.title }}</h2>
+  <esos-certificate-details-list-summary-template
+    [certificatesDetails]="data.gdaCertificatesDetails.certificateDetails"
+    [isEditable]="isEditable"
+    [queryParams]="queryParams"
+    [changeLink]="changeLink?.GDA_CERTIFICATES_DETAILS"
+  ></esos-certificate-details-list-summary-template>
+</ng-container>

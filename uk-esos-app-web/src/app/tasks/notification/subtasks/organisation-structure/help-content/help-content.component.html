@@ -1,0 +1,125 @@
+<govuk-details summary="Help me answer this question">
+  <div [ngSwitch]="field">
+    <div *ngSwitchCase="'isPartOfArrangementRu'">
+      <p class="govuk-body">
+        The highest UK parent of a group is the undertaking that has no parent, or that only has parents which are
+        overseas undertakings.
+      </p>
+      <p class="govuk-body">The highest UK parent acts as the responsible undertaking by default.</p>
+      <p class="govuk-body">
+        If a corporate group contains overseas parent undertakings, the group may have more than one highest UK parent
+        group. By default each highest UK parent group will participate separately in ESOS. If the highest UK parent
+        groups within the same corporate group choose to aggregate and comply as one participant, there must be an
+        agreement in writing between all highest parents in the group that specifies which highest UK parent will be the
+        responsible undertaking
+      </p>
+    </div>
+    <div *ngSwitchCase="'isPartOfArrangement'">
+      <p class="govuk-body">
+        The highest UK parent of a group is the undertaking which has no parent, or only has parents which are overseas
+        undertakings. All subsidiary undertakings of that highest UK parent are by default part of the same participant
+        for ESOS.
+      </p>
+      <p class="govuk-body">
+        By default the highest UK parent acts as the responsible undertaking – this means it will complete the ESOS
+        assessment and notify the Environment Agency of compliance for itself and subsidiary undertakings.
+      </p>
+      <p class="govuk-body">
+        Another undertaking within the highest parent group can be chosen to act as the responsible undertaking provided
+        all undertakings in the highest parent group agree this in writing, and keep a copy of this agreement in their
+        evidence pack.
+      </p>
+      <p class="govuk-body">
+        Undertakings within a highest UK parent group can disaggregate from one another for the purposes of compliance
+        with ESOS, provided they agree in writing with their highest parent, again keeping a copy of this agreement in
+        their evidence pack.
+      </p>
+      <p class="govuk-body">
+        Undertakings that disaggregate must each report compliance as two or more separate participants. See
+        <a
+          class="govuk-link"
+          href="https://www.gov.uk/government/publications/comply-with-the-energy-savings-opportunity-scheme-esos/complying-with-the-energy-savings-opportunity-scheme-esos#section-1-8"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          section 1.8
+        </a>
+        for more details.
+      </p>
+      <p class="govuk-body">
+        If a corporate group contains overseas parent undertakings, the corporate group may consist of more than one
+        highest UK parent group. In this instance, if one highest UK parent group is in scope of ESOS then every other
+        highest UK parent group in the same global group must also participate in ESOS. However, the default in this
+        circumstance is that each highest UK parent group will participate separately.
+      </p>
+      <p class="govuk-body">
+        If the highest UK parent groups within the same corporate group wish to comply as one participant (to
+        ‘aggregate’) all highest parents in those highest parent groups must agree in writing which of them is to be the
+        responsible undertaking in relation to the participant’s compliance with the scheme. See
+        <a
+          class="govuk-link"
+          href="https://www.gov.uk/government/publications/comply-with-the-energy-savings-opportunity-scheme-esos/complying-with-the-energy-savings-opportunity-scheme-esos#section-1-9"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          section 1.9
+        </a>
+        for more details.
+      </p>
+    </div>
+
+    <div *ngSwitchCase="'isPartOfFranchiseRu'">
+      <p class="govuk-body">
+        Franchisors are not grouped with their franchisees when determining qualification for ESOS, unless a franchisor
+        is also a parent undertaking of the franchisee undertaking.
+      </p>
+      <p class="govuk-body">
+        A franchisor and one or more franchisees that individually qualify for ESOS can comply as one participant. All
+        parties must complete a written agreement, and one party must become the responsible undertaking.
+      </p>
+      <p class="govuk-body">
+        You must keep all details of the participating organisations together in your evidence pack.
+      </p>
+    </div>
+    <div *ngSwitchCase="'isPartOfFranchise'">
+      <p class="govuk-body">
+        For the purpose of determining ESOS qualification franchisors are not grouped with their franchisees (unless
+        they are also a parent undertaking of the franchisee undertaking).
+      </p>
+      <p class="govuk-body">
+        If a franchisor and one or more franchisees all individually qualify and wish to comply as one participant this
+        is allowed.
+      </p>
+      <p class="govuk-body">
+        This is subject to a written agreement between all parties, and one undertaking becoming the responsible
+        undertaking.
+      </p>
+      <p class="govuk-body">
+        Please keep all details relating to which organisations are participating together in your evidence pack.
+      </p>
+    </div>
+
+    <div *ngSwitchCase="'isTrust'">
+      <p class="govuk-body">
+        Assets held in trust must be included in ESOS if the organisation that is party to the agreement for the supply
+        of energy to the assets qualifies for ESOS.
+      </p>
+      <p class="govuk-body">The qualification of these parties is determined in the normal way.</p>
+      <p class="govuk-body">
+        Where there is no energy supply, the trust assets will not need to be included in an ESOS assessment because
+        trust assets only fall into ESOS if an energy supply agreement is held. Please note that the concept of a supply
+        agreement being in place only affects the qualification of trusts for ESOS, all other types of undertaking which
+        meet the qualification criteria will be required to participate in ESOS if they meet the qualification criteria.
+      </p>
+      <p class="govuk-body">
+        Trustees, operators, AIFMs and third party undertakings which have a responsibility to undertake an ESOS
+        assessment in relation to assets held in trust must participate separately in relation to the trust, themselves
+        and any other trust for which they have ESOS responsibilities.
+      </p>
+      <p class="govuk-body">
+        See guidance 1.7.3 to view table that summarises how responsibility for ESOS compliance for a trust asset is
+        determined.
+      </p>
+    </div>
+  </div>
+</govuk-details>

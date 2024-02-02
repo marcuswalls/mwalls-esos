@@ -1,0 +1,52 @@
+<!-- eslint-disable @angular-eslint/template/eqeqeq -->
+<ng-container *ngIf="data?.energySavingsEstimation">
+  <h2 class="govuk-heading-m">
+    What is the breakdown of an estimate of energy savings achieved during the compliance period, which for the third
+    compliance period is 6 December 2019 to 5 December 2023?
+  </h2>
+
+  <esos-energy-consumption-details-summary-template
+    [isEditable]="isEditable"
+    [energyConsumption]="data.energySavingsEstimation"
+    [queryParams]="queryParams"
+    [changeLink]="wizardStep.STEP_ESTIMATE"
+  ></esos-energy-consumption-details-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.totalEnergySavingsEstimation >= 0">
+  <esos-energy-savings-total-estimation-summary-template
+    [isEditable]="isEditable"
+    [totalEnergySavingsEstimation]="data.totalEnergySavingsEstimation"
+    [queryParams]="queryParams"
+    [changeLink]="wizardStep.STEP_ESTIMATE_TOTAL"
+  ></esos-energy-savings-total-estimation-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.energySavingCategoriesExist != null">
+  <esos-energy-savings-categories-summary-template
+    [isEditable]="isEditable"
+    [energySavingCategoriesExist]="data.energySavingCategoriesExist"
+    [energySavingsCategories]="data.energySavingsCategories"
+    [queryParams]="queryParams"
+    [changeLinkExist]="wizardStep.STEP_CATEGORIES_EXIST"
+    [changeLink]="wizardStep.STEP_CATEGORIES"
+  ></esos-energy-savings-categories-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.energySavingsRecommendationsExist != null">
+  <esos-energy-savings-recommendations-summary-template
+    [isEditable]="isEditable"
+    [energySavingsRecommendationsExist]="data.energySavingsRecommendationsExist"
+    [energySavingsRecommendations]="data.energySavingsRecommendations"
+    [queryParams]="queryParams"
+    [changeLinkExist]="wizardStep.STEP_RECOMMENDATIONS_EXIST"
+    [changeLink]="wizardStep.STEP_RECOMMENDATIONS"
+  ></esos-energy-savings-recommendations-summary-template>
+</ng-container>
+
+<esos-energy-savings-details-summary-template
+  [isEditable]="isEditable"
+  [energySavingsDetails]="data?.details"
+  [queryParams]="queryParams"
+  [changeLink]="wizardStep.STEP_DETAILS"
+></esos-energy-savings-details-summary-template>

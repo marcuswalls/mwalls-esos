@@ -1,0 +1,88 @@
+<!-- eslint-disable-next-line @angular-eslint/template/eqeqeq -->
+<ng-container *ngIf="energySavingCategoriesExist != null">
+  <h2 class="govuk-heading-m">
+    Do you have any information on the energy savings achieved during the compliance period against different energy
+    saving categories?
+  </h2>
+
+  <dl govuk-summary-list>
+    <div govukSummaryListRow>
+      <dd govukSummaryListRowValue>{{ energySavingCategoriesExist | booleanToText }}</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLinkExist" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="energySavingsCategories">
+  <h2 class="govuk-heading-m">
+    What is the breakdown of the energy savings achieved during the compliance period against the following energy
+    saving categories?
+  </h2>
+
+  <dl govuk-summary-list>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Energy management practices</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsCategories.energyManagementPractices }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Behaviour change interventions</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsCategories.behaviourChangeInterventions }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Training</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsCategories.training }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Controls improvements</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsCategories.controlsImprovements }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Short term capital investments (with payback period of less than 3 years)</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsCategories.shortTermCapitalInvestments }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Long term capital investments (with payback period of more than 3 years)</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsCategories.longTermCapitalInvestments }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Other measures not covered by one of the above</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsCategories.otherMeasures }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Total</dt>
+      <dd govukSummaryListRowValue>
+        <strong>{{ energySavingsCategories.total }}</strong> kWh
+      </dd>
+    </div>
+  </dl>
+</ng-container>

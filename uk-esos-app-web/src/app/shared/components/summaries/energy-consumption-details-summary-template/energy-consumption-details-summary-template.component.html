@@ -1,0 +1,43 @@
+<dl govuk-summary-list>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Buildings</dt>
+    <dd govukSummaryListRowValue>{{ energyConsumption.buildings }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Transport</dt>
+    <dd govukSummaryListRowValue>{{ energyConsumption.transport }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Industrial processes</dt>
+    <dd govukSummaryListRowValue>{{ energyConsumption.industrialProcesses }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Other processes</dt>
+    <dd govukSummaryListRowValue>{{ energyConsumption.otherProcesses }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Total</dt>
+    <dd govukSummaryListRowValue>
+      <strong>{{ energyConsumption.total }}</strong> kWh
+      <span *ngIf="energyConsumption?.significantEnergyConsumptionPct">
+        (<strong>{{ energyConsumption.significantEnergyConsumptionPct }}%</strong> of total energy consumption)
+      </span>
+    </dd>
+  </div>
+</dl>

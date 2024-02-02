@@ -1,0 +1,55 @@
+<div class="govuk-grid-row" *ngIf="requestInfo$ | async as requestInfo">
+  <div
+    [class]="
+      (validRequestCreateActionsTypes$ | async)?.length > 0 ? 'govuk-grid-column-two-thirds' : 'govuk-grid-column-full'
+    "
+  >
+    <esos-page-heading size="xl" [caption]="requestInfo.id">
+      {{ title$ | async }} {{ workflowDetailsTypesMap[requestInfo.requestType] }}
+      <span
+        class="search-results-list_item_status govuk-tag govuk-tag--{{
+          requestInfo.requestStatus | statusTagColor
+        }} float-right"
+      >
+        <strong>{{ requestInfo.requestStatus | i18nSelect : workflowStatusesTagMap }}</strong>
+      </span>
+    </esos-page-heading>
+
+    <ng-container *ngIf="relatedTasks$ | async as relatedTasks">
+      <esos-related-tasks
+        *ngIf="relatedTasks.length > 0"
+        [items]="relatedTasks"
+        heading="Tasks to complete"
+      ></esos-related-tasks>
+    </ng-container>
+
+    <govuk-tabs (selectedTab)="selectedTab($event)">
+      <ng-template govukTab id="timeline" label="Timeline">
+        <div class="govuk-grid-row" *ngIf="actions$ | async as actions">
+          <esos-timeline class="govuk-grid-column-full">
+            <esos-timeline-item
+              *ngFor="let action of actions"
+              [action]="action"
+              [link]="['timeline', action.id]"
+              [state]="navigationState"
+            ></esos-timeline-item>
+            <p class="govuk-body" *ngIf="actions?.length === 0">No timeline events</p>
+          </esos-timeline>
+        </div>
+      </ng-template>
+      <ng-template govukTab id="notes" label="Notes" *ngIf="(userRoleType$ | async) === 'REGULATOR'">
+        <esos-request-notes [currentTab]="currentTab$ | async"></esos-request-notes>
+      </ng-template>
+    </govuk-tabs>
+  </div>
+  <div
+    class="govuk-grid-column-one-third"
+    *ngIf="(accountId$ | async) !== null && (validRequestCreateActionsTypes$ | async)?.length > 0"
+  >
+    <esos-workflow-related-create-actions
+      [accountId$]="accountId$"
+      [requestId$]="requestId$"
+      [requestCreateActionsTypes$]="validRequestCreateActionsTypes$"
+    ></esos-workflow-related-create-actions>
+  </div>
+</div>

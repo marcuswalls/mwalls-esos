@@ -1,0 +1,19 @@
+<esos-wizard-step
+  [formGroup]="form"
+  [heading]="contentMap.qualificationType.title"
+  [caption]="contentMap.title"
+  (formSubmit)="submit()"
+  submitText="Save and continue"
+  [hideSubmit]="!isEditable"
+>
+  <div formControlName="qualificationType" govuk-radio>
+    <govuk-radio-option
+      value="QUALIFY"
+      label="Yes, the organisation qualifies for ESOS and will submit a notification"
+    />
+    <govuk-radio-option
+      value="NOT_QUALIFY"
+      label="No, the organisation does not qualify for ESOS and will not submit a notification"
+    />
+  </div>
+</esos-wizard-step>

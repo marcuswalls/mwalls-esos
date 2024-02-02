@@ -1,0 +1,20 @@
+<esos-wizard-step
+  [formGroup]="form"
+  [heading]="contentMap.energyResponsibility.title"
+  [caption]="contentMap.title"
+  (formSubmit)="submit()"
+  submitText="Save and continue"
+  [hideSubmit]="!isEditable"
+>
+  <div formControlName="energyResponsibility" govuk-radio>
+    <govuk-radio-option value="RESPONSIBLE" label="Yes, the organisation is responsible for energy" />
+    <govuk-radio-option
+      value="RESPONSIBLE_BUT_LESS_THAN_40000_KWH"
+      label="Yes, the organisation is responsible for energy, but used less than 40,000 kWh of energy in the reference period"
+    />
+    <govuk-radio-option
+      value="NOT_RESPONSIBLE"
+      label="No, the organisation has no energy responsibility and the total energy consumption is zero"
+    />
+  </div>
+</esos-wizard-step>

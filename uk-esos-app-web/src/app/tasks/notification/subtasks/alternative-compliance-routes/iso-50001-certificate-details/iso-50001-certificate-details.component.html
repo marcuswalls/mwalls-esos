@@ -1,0 +1,16 @@
+<esos-wizard-step
+  [formGroup]="form"
+  [heading]="alternativeComplianceRoutesMap.iso50001CertificateDetails.title"
+  [caption]="alternativeComplianceRoutesMap.title"
+  (formSubmit)="onSubmit()"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <div formControlName="certificateNumber" govuk-text-input
+       label="Certificate number" hint="This can be found at the top of your certificate"
+       widthClass="govuk-!-width-one-third"></div>
+  <div formControlName="validFrom" govuk-date-input
+       label="Valid from" [hint]="dateHint" [max]="dateMax"></div>
+  <div formControlName="validUntil" govuk-date-input
+       label="Valid until" [hint]="dateHint"></div>
+</esos-wizard-step>

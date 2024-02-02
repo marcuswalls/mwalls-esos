@@ -1,0 +1,25 @@
+<dl govuk-summary-list>
+  <div govukSummaryListRow *ngIf="assets?.iso50001">
+    <dt govukSummaryListRowKey>ISO 50001</dt>
+    <dd govukSummaryListRowValue class="pre-wrap">{{ assets.iso50001 }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow *ngIf="assets?.dec">
+    <dt govukSummaryListRowKey>Display Energy Certificate (DECs)</dt>
+    <dd govukSummaryListRowValue class="pre-wrap">{{ assets.dec }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow *ngIf="assets?.gda">
+    <dt govukSummaryListRowKey>Green Deal Assessment</dt>
+    <dd govukSummaryListRowValue class="pre-wrap">{{ assets.gda }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+</dl>

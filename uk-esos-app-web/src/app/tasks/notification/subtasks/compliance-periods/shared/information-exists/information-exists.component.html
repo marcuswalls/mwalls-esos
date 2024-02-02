@@ -1,0 +1,20 @@
+<esos-wizard-step
+  [formGroup]="formGroup"
+  [heading]="heading"
+  caption="{{ isFirstCompliancePeriod ? 'First compliance period' : 'Second compliance period' }}"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+  (formSubmit)="submit()"
+>
+  <ng-container *ngIf="isFirstCompliancePeriod; else second">
+    <p class="govuk-body">The first compliance period lasted from 17 July 2014 to 5 December 2015.</p>
+  </ng-container>
+  <ng-template #second>
+    <p class="govuk-body">The second compliance period lasted from 6 December 2015 to 5 December 2019.</p>
+  </ng-template>
+
+  <div formControlName="informationExists" govuk-radio>
+    <govuk-radio-option [value]="true" label="Yes"></govuk-radio-option>
+    <govuk-radio-option [value]="false" label="No"></govuk-radio-option>
+  </div>
+</esos-wizard-step>

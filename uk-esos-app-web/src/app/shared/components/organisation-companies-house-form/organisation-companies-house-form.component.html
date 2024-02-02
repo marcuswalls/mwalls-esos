@@ -1,0 +1,27 @@
+<div class="govuk-!-width-two-thirds">
+  <esos-wizard-step
+    [formGroup]="formGroup"
+    heading="Is the UK organisation registered at Companies House?"
+    caption="Organisation details"
+    (formSubmit)="onSubmit()"
+    [showBackLink]="true"
+    [showCancelLink]="showCancelLink"
+    [cancelLinkPath]="cancelLinkPath"
+  >
+    <div formControlName="registrationStatus" govuk-radio>
+      <govuk-radio-option [value]="true" label="Yes">
+        <ng-container govukConditionalContent>
+          <div
+            formControlName="registrationNumber"
+            govuk-text-input
+            hint="The Company Registration Number must be either 8 digits, 1 letter followed by 7 digits or 2 letters followed by 6 digits.
+              If your Company Registration Number has less than 8 digits then you may need to add zeros at the beginning."
+            label="Enter the Company Registration Number"
+            widthClass="govuk-!-width-one-third"
+          ></div>
+        </ng-container>
+      </govuk-radio-option>
+      <govuk-radio-option [value]="false" label="No"></govuk-radio-option>
+    </div>
+  </esos-wizard-step>
+</div>

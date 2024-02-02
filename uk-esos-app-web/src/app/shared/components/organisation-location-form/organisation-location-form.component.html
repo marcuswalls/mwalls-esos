@@ -1,0 +1,19 @@
+<div class="govuk-!-width-two-thirds">
+  <esos-wizard-step
+    [formGroup]="formGroup"
+    (formSubmit)="onSubmit()"
+    heading="Location of registered office or principal place of activity (where no registered office exists)"
+    caption="Organisation details"
+    [showBackLink]="true"
+    [showCancelLink]="showCancelLink"
+    [cancelLinkPath]="cancelLinkPath"
+  >
+    <div govuk-radio formControlName="location">
+      <govuk-radio-option
+        *ngFor="let option of options | keyvalue: originalOrder"
+        [label]="option.value"
+        [value]="option.key"
+      ></govuk-radio-option>
+    </div>
+  </esos-wizard-step>
+</div>

@@ -1,0 +1,58 @@
+<div class="govuk-!-margin-bottom-5" *ngIf="organisations() as organisations">
+  <h2 class="govuk-heading-m">{{ vm.header }}</h2>
+
+  <govuk-table [columns]="tableColumns" [data]="organisations">
+    <ng-template let-column="column" let-row="row" let-index="index">
+      <ng-container [ngSwitch]="column.field">
+        <ng-container *ngSwitchCase="'organisationDetails'">
+          <div class="pre-wrap">
+            {{ row[column.field] }}
+          </div>
+          <div *ngIf="index === 0 && page() === 1"><span class="govuk-caption-m">Responsible undertaking</span></div>
+        </ng-container>
+        <ng-container *ngSwitchCase="'links'">
+          <div *ngIf="vm.isEditable" [ngSwitch]="index" class="cell-container">
+            <ng-container *ngSwitchCase="'0'">
+              <a
+                govukLink
+                [routerLink]="[vm.isListPreviousPage ? '../' : './', vm.wizardStep.RU_DETAILS]"
+                [queryParams]="queryParams"
+              >
+                Change
+              </a>
+            </ng-container>
+            <ng-container *ngSwitchDefault formGroupName="contactTypes">
+              <a
+                govukLink
+                [routerLink]="[vm.isListPreviousPage ? '../' : './', index, vm.wizardStep.EDIT]"
+                [queryParams]="queryParams"
+              >
+                Change
+              </a>
+            </ng-container>
+          </div>
+          <br />
+          <a
+            govukLink
+            *ngIf="index !== 0 && vm.isEditable"
+            [routerLink]="[]"
+            (click)="removeOrganisationClicked(index)"
+          >
+            Remove
+          </a>
+        </ng-container>
+        <ng-container *ngSwitchDefault>
+          {{ row[column.field] ? '&#10003;' : null }}
+        </ng-container>
+      </ng-container>
+    </ng-template>
+  </govuk-table>
+
+  <ng-container *ngIf="organisationsLength > pageSize">
+    <esos-pagination
+      (currentPageChange)="page.set($event)"
+      [count]="organisationsLength"
+      [pageSize]="pageSize"
+    ></esos-pagination>
+  </ng-container>
+</div>

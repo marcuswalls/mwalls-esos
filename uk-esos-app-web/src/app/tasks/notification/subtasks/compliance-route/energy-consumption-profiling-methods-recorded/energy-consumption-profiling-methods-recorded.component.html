@@ -1,0 +1,30 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Are the methods used for energy consumption profiling recorded in the evidence pack? (optional)"
+  caption="Compliance route"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <p class="govuk-body govuk-!-font-weight-bold">The evidence pack needs to contain:</p>
+  <ul class="govuk-list govuk-list--bullet">
+    <li>Details of the methods used and the extent to which it was used.</li>
+    <li>The reasons why the energy audit does not include an analysis based on energy consumption profiles.</li>
+  </ul>
+  <p class="govuk-body">
+    This would have been carried out by the Lead Assessor, who may be part of your organisation or external.
+  </p>
+  <p class="govuk-body">If you are unsure if this information is in the evidence pack, speak to your Lead Assessor.</p>
+
+  <div formControlName="areEnergyConsumptionProfilingMethodsRecorded" govuk-radio>
+    <govuk-radio-option [value]="true" label="Yes"></govuk-radio-option>
+    <govuk-radio-option [value]="false" label="No"></govuk-radio-option>
+  </div>
+
+  <govuk-details summary="Help me answer this question">
+    <p class="govuk-body">
+      ESOS evidence pack is an information pack that shows how the assessors carried out the assessment and audit.
+      Ensure this has been given to you by your lead assessor.
+    </p>
+  </govuk-details>
+</esos-wizard-step>

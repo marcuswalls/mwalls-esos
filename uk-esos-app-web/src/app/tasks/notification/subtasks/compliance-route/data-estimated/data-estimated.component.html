@@ -1,0 +1,21 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Was the total energy consumption or spend calculated using any estimated data?"
+  caption="Compliance route"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <p class="govuk-body">
+    For example, your organisation's energy consumption or spend may have been calculated without 12 months of actual
+    data.
+  </p>
+  <p class="govuk-body">
+    If you did not have 12 months of actual data, you must tell us if you estimated the data instead.
+  </p>
+
+  <div formControlName="areDataEstimated" govuk-radio>
+    <govuk-radio-option [value]="true" label="Yes"></govuk-radio-option>
+    <govuk-radio-option [value]="false" label="No"></govuk-radio-option>
+  </div>
+</esos-wizard-step>

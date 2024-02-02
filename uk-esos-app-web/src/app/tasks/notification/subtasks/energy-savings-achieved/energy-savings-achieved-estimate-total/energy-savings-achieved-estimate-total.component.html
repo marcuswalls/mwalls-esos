@@ -1,0 +1,18 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="What is the estimate of the total energy savings achieved during the third compliance period?"
+  caption="Energy savings achieved"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <p class="govuk-body">The third compliance period lasted from 6 December 2019 to 5 December 2023.</p>
+
+  <div
+    govuk-text-input
+    inputType="number"
+    widthClass="govuk-!-width-one-third"
+    suffix="kWh"
+    formControlName="totalEnergySavingsEstimation"
+  ></div>
+</esos-wizard-step>

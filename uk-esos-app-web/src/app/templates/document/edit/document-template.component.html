@@ -1,0 +1,18 @@
+<ng-container *ngIf="documentTemplate$ | async as documentTemplate">
+  <govuk-error-summary *ngIf="displayErrorSummary$ | async" [form]="form"></govuk-error-summary>
+  <esos-page-heading>Edit {{ documentTemplate.name }}</esos-page-heading>
+  <h2 class="govuk-heading-m">Document template</h2>
+  <p class="govuk-body">Uploaded file</p>
+  <form (ngSubmit)="onSubmit()" [formGroup]="form">
+    <esos-file-input
+      [downloadUrl]="getDownloadUrl"
+      formControlName="documentFile"
+      label="Upload a file"
+      [showFilesizeHint]="false"
+    ></esos-file-input>
+    <button esosPendingButton govukButton type="submit">Confirm and complete</button>
+  </form>
+  <esos-document-template-details-template
+    [documentTemplate]="documentTemplate"
+  ></esos-document-template-details-template>
+</ng-container>

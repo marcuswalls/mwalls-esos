@@ -1,0 +1,33 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Add person"
+  caption="Assessment personnel"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <div class="govuk-body">
+    <h3 class="govuk-heading-s">Name</h3>
+
+    <div
+      formControlName="firstName"
+      govuk-text-input
+      label="First name"
+      class="govuk-!-margin-bottom-3"
+      widthClass="govuk-!-width-one-third"
+    ></div>
+
+    <div formControlName="lastName" govuk-text-input label="Last name" widthClass="govuk-!-width-one-third"></div>
+
+    <div
+      formControlName="type"
+      govuk-radio
+      legend="Is this person internal or external to your organisation?"
+      legendSize="normal"
+      [isInline]="true"
+    >
+      <govuk-radio-option [value]="'INTERNAL'" label="Internal"> </govuk-radio-option>
+      <govuk-radio-option [value]="'EXTERNAL'" label="External"></govuk-radio-option>
+    </div>
+  </div>
+</esos-wizard-step>

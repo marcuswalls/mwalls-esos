@@ -1,0 +1,13 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Have you used significant energy consumption?"
+  caption="Energy consumption"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <div formControlName="significantEnergyConsumptionExists" govuk-radio>
+    <govuk-radio-option [value]="true" label="Yes"></govuk-radio-option>
+    <govuk-radio-option [value]="false" label="No"></govuk-radio-option>
+  </div>
+</esos-wizard-step>

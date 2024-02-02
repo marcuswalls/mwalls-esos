@@ -1,0 +1,56 @@
+<!-- eslint-disable-next-line @angular-eslint/template/eqeqeq -->
+<ng-container *ngIf="energySavingsRecommendationsExist != null">
+  <h2 class="govuk-heading-m">
+    Do you have any data on the proportion of energy savings achieved which relate to recommendations from different
+    sources?
+  </h2>
+
+  <dl govuk-summary-list>
+    <div govukSummaryListRow>
+      <dd govukSummaryListRowValue>{{ energySavingsRecommendationsExist | booleanToText }}</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLinkExist" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+  </dl>
+</ng-container>
+
+<ng-container *ngIf="energySavingsRecommendations">
+  <h2 class="govuk-heading-m">
+    What is the breakdown of the proportion of energy savings achieved which relate to recommendations from the
+    following categories?
+  </h2>
+
+  <dl govuk-summary-list>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Energy audits</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsRecommendations.energyAudits }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Alternative compliance routes</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsRecommendations.alternativeComplianceRoutes }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Other</dt>
+      <dd govukSummaryListRowValue>{{ energySavingsRecommendations.other }} kWh</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+      </dd>
+    </div>
+
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Total</dt>
+      <dd govukSummaryListRowValue>
+        <strong>{{ energySavingsRecommendations.total }}</strong> kWh
+      </dd>
+    </div>
+  </dl>
+</ng-container>

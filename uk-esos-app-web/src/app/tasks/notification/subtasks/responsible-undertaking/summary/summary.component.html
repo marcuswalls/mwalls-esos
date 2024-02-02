@@ -1,0 +1,20 @@
+<ng-container *ngIf="vm() as vm">
+  <esos-page-heading [caption]="vm.responsibleUndertakingMap.title" size="xl">Check your answers</esos-page-heading>
+
+  <esos-responsible-undertaking-summary-page
+    [isEditable]="vm.isEditable"
+    [responsibleUndertaking]="vm.responsibleUndertaking"
+    [responsibleUndertakingMap]="vm.responsibleUndertakingMap"
+    [wizardStep]="vm.wizardStep"
+  ></esos-responsible-undertaking-summary-page>
+
+  <button
+    *ngIf="vm.isEditable && !vm.isSubTaskCompleted"
+    (click)="onSubmit()"
+    esosPendingButton
+    govukButton
+    type="button"
+  >
+    Confirm and complete
+  </button>
+</ng-container>

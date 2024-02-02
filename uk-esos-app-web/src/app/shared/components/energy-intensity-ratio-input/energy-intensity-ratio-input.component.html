@@ -1,0 +1,17 @@
+<ng-content></ng-content>
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third">
+    <div govuk-text-input inputType="number" label="Intensity ratio" formControlName="ratio"></div>
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <div govuk-text-input label="Unit" prefix="kWh/" formControlName="unit"></div>
+  </div>
+</div>
+
+<div
+  *ngIf="hasAdditionalInfo"
+  formControlName="additionalInformation"
+  govuk-textarea
+  [maxLength]="10000"
+  label="Additional Information (optional)"
+></div>

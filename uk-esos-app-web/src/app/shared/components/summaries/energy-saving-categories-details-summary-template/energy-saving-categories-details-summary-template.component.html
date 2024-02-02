@@ -1,0 +1,58 @@
+<dl govuk-summary-list>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Energy management practices</dt>
+    <dd govukSummaryListRowValue>{{ energySavingsCategories.energyManagementPractices }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Behaviour change interventions</dt>
+    <dd govukSummaryListRowValue>{{ energySavingsCategories.behaviourChangeInterventions }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Training</dt>
+    <dd govukSummaryListRowValue>{{ energySavingsCategories.training }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Controls improvements</dt>
+    <dd govukSummaryListRowValue>{{ energySavingsCategories.controlsImprovements }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Short term capital investments (with a payback period of less than 3 years)</dt>
+    <dd govukSummaryListRowValue>{{ energySavingsCategories.shortTermCapitalInvestments }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Long term capital investments (with a payback period of less than 3 years)</dt>
+    <dd govukSummaryListRowValue>{{ energySavingsCategories.longTermCapitalInvestments }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Other measures not covered by one of the above</dt>
+    <dd govukSummaryListRowValue>{{ energySavingsCategories.otherMeasures }} kWh</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Total</dt>
+    <dd govukSummaryListRowValue>
+      <strong>{{ energySavingsCategories.total }}</strong> kWh
+    </dd>
+    <dd govukSummaryListRowActions></dd>
+  </div>
+</dl>

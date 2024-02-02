@@ -1,0 +1,129 @@
+<!-- eslint-disable @angular-eslint/template/eqeqeq -->
+<dl govuk-summary-list [hasBorders]="true">
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>{{ roContentMap.qualificationType.title }}</dt>
+    <dd govukSummaryListRowValue>{{ contentMap.qualificationType[data?.qualificationType] }}</dd>
+    <dd govukSummaryListRowActions *ngIf="isEditable">
+      <a [routerLink]="[stepUrls.QUALIFICATION_TYPE]" [queryParams]="{ change: true }">Change</a>
+    </dd>
+  </div>
+  <ng-container [ngSwitch]="data?.qualificationType">
+    <ng-container *ngSwitchCase="'QUALIFY'" [ngTemplateOutlet]="qualificationReasons" />
+    <ng-container *ngSwitchCase="'NOT_QUALIFY'" [ngTemplateOutlet]="noQualificationReason" />
+  </ng-container>
+</dl>
+
+<ng-container *ngIf="data?.reportingObligationDetails?.energyResponsibilityType as ert">
+  <ng-container *ngIf="ert !== 'NOT_RESPONSIBLE'" [ngTemplateOutlet]="complianceRouteDistribution" />
+</ng-container>
+
+<!-- NG TEMPLATES -->
+<ng-template #qualificationReasons>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>{{ roContentMap.qualificationReasons.title }}</dt>
+    <dd govukSummaryListRowValue>
+      <ul class="data-list">
+        <li *ngFor="let qr of data?.reportingObligationDetails?.qualificationReasonTypes ?? []">
+          {{ contentMap.qualificationReasons[qr] }}
+        </li>
+      </ul>
+    </dd>
+    <dd govukSummaryListRowActions *ngIf="isEditable">
+      <a [routerLink]="[stepUrls.QUALIFICATION_REASONS]" [queryParams]="{ change: true }">Change</a>
+    </dd>
+  </div>
+  <ng-container *ngTemplateOutlet="energyResponsibility"></ng-container>
+</ng-template>
+
+<ng-template #noQualificationReason>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>{{ roContentMap.noQualificationReason.title }}</dt>
+    <dd govukSummaryListRowValue class="pre-wrap">{{ data?.noQualificationReason }}</dd>
+    <dd govukSummaryListRowActions *ngIf="isEditable">
+      <a [routerLink]="[stepUrls.NO_QUALIFICATION_REASON]" [queryParams]="{ change: true }">Change</a>
+    </dd>
+  </div>
+</ng-template>
+
+<ng-template #energyResponsibility>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>{{ roContentMap.energyResponsibility.title }}</dt>
+    <dd govukSummaryListRowValue>
+      {{ contentMap.energyResponsibility[data?.reportingObligationDetails?.energyResponsibilityType] }}
+    </dd>
+    <dd govukSummaryListRowActions *ngIf="isEditable">
+      <a [routerLink]="[stepUrls.ENERGY_RESPONSIBILITY]" [queryParams]="{ change: true }">Change</a>
+    </dd>
+  </div>
+</ng-template>
+
+<ng-template #complianceRouteDistribution>
+  <h2 class="govuk-heading-m">{{ roContentMap.complianceRouteDistribution.title }}</h2>
+  <dl govuk-summary-list [hasBorders]="true">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>ISO 5001</dt>
+      <dd govukSummaryListRowValue>
+        <span *ngIf="data?.reportingObligationDetails?.complianceRouteDistribution?.iso50001Pct != null">
+          {{ data?.reportingObligationDetails?.complianceRouteDistribution?.iso50001Pct }}%
+        </span>
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[stepUrls.COMPLIANCE_ROUTE_DISTRIBUTION]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Display Energy Certificate (DECs)</dt>
+      <dd govukSummaryListRowValue>
+        <span
+          *ngIf="data?.reportingObligationDetails?.complianceRouteDistribution?.displayEnergyCertificatePct != null"
+        >
+          {{ data?.reportingObligationDetails?.complianceRouteDistribution?.displayEnergyCertificatePct }}%
+        </span>
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[stepUrls.COMPLIANCE_ROUTE_DISTRIBUTION]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Green Deal Assessment</dt>
+      <dd govukSummaryListRowValue>
+        <span *ngIf="data?.reportingObligationDetails?.complianceRouteDistribution?.greenDealAssessmentPct != null">
+          {{ data?.reportingObligationDetails?.complianceRouteDistribution?.greenDealAssessmentPct }}%
+        </span>
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[stepUrls.COMPLIANCE_ROUTE_DISTRIBUTION]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Energy audits that are compliant with ESOS</dt>
+      <dd govukSummaryListRowValue>
+        <span *ngIf="data?.reportingObligationDetails?.complianceRouteDistribution?.energyAuditsPct != null">
+          {{ data?.reportingObligationDetails?.complianceRouteDistribution?.energyAuditsPct }}%
+        </span>
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[stepUrls.COMPLIANCE_ROUTE_DISTRIBUTION]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Energy use not audited</dt>
+      <dd govukSummaryListRowValue>
+        <span *ngIf="data?.reportingObligationDetails?.complianceRouteDistribution?.energyNotAuditedPct != null">
+          {{ data?.reportingObligationDetails?.complianceRouteDistribution?.energyNotAuditedPct }}%
+        </span>
+      </dd>
+      <dd govukSummaryListRowActions *ngIf="isEditable">
+        <a [routerLink]="[stepUrls.COMPLIANCE_ROUTE_DISTRIBUTION]" [queryParams]="{ change: true }">Change</a>
+      </dd>
+    </div>
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Total</dt>
+      <dd govukSummaryListRowValue>
+        <span *ngIf="data?.reportingObligationDetails?.complianceRouteDistribution?.totalPct != null">
+          {{ data?.reportingObligationDetails?.complianceRouteDistribution?.totalPct }}%
+        </span>
+      </dd>
+    </div>
+  </dl>
+</ng-template>

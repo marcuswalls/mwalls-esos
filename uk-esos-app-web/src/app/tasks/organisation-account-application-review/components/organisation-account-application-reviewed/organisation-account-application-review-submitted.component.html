@@ -1,0 +1,13 @@
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <ng-container *ngIf="isReviewAccepted; else rejected">
+      <govuk-panel>You have approved the organisation account application</govuk-panel>
+    </ng-container>
+    <ng-template #rejected>
+      <govuk-panel>You have rejected the organisation account application</govuk-panel>
+    </ng-template>
+
+    <h3 class="govuk-heading-m">What happens next</h3>
+    <p class="govuk-body govuk-!-width-two-thirds">An email will be sent to the relevant user with your decision</p>
+  </div>
+</div>

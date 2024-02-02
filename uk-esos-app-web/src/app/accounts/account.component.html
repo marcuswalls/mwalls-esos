@@ -1,0 +1,41 @@
+<ng-container *ngIf="accountDetails$ | async as account">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-three-quarters">
+      <esos-page-heading size="xl">
+        {{ account.name }}
+        <span
+          [class]="
+            'status govuk-tag govuk-!-margin-left-6 ' +
+            (account.status === 'LIVE' ? 'govuk-tag--green' : 'govuk-tag--red')
+          "
+        >
+          <strong>{{ account.status | accountStatus }} </strong>
+        </span>
+      </esos-page-heading>
+    </div>
+    <ng-container *ngIf="(userRoleType$ | async) !== 'REGULATOR'">
+      <div class="govuk-grid-column-one-quarter">
+        <button govukButton type="button" routerLink="process-actions" class="float-right">Start a new task</button>
+      </div>
+    </ng-container>
+  </div>
+</ng-container>
+<govuk-tabs (selectedTab)="selectedTab($event)">
+  <ng-template govukTab id="details" label="Details">
+    <esos-account-details [currentTab]="currentTab$ | async"></esos-account-details>
+  </ng-template>
+  <ng-template govukTab id="phases" label="Phases">
+    <ng-container *ngIf="(currentTab$ | async) === 'phases'">
+      <esos-phases></esos-phases>
+    </ng-container>
+  </ng-template>
+  <ng-template *ngIf="(userRoleType$ | async) !== 'VERIFIER'" govukTab id="users" label="Users and contacts">
+    <esos-operators [currentTab]="currentTab$ | async"></esos-operators>
+  </ng-template>
+  <ng-template govukTab id="workflows" label="Workflow history">
+    <esos-workflows [currentTab]="currentTab$ | async"></esos-workflows>
+  </ng-template>
+  <ng-template govukTab id="notes" label="Notes" *ngIf="(userRoleType$ | async) === 'REGULATOR'">
+    <esos-account-notes [currentTab]="currentTab$ | async"></esos-account-notes>
+  </ng-template>
+</govuk-tabs>

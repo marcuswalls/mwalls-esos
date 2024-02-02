@@ -1,0 +1,11 @@
+<form (ngSubmit)="onSubmit()" [formGroup]="formGroup">
+  <govuk-error-summary *ngIf="isSummaryDisplayedSubject | async" [form]="formGroup"></govuk-error-summary>
+
+  <esos-page-heading [caption]="caption">{{ heading }}</esos-page-heading>
+
+  <ng-content></ng-content>
+  <button esosPendingButton govukButton type="submit" *ngIf="!hideSubmit">{{ submitText }}</button>
+  <div *ngIf="showCancelLink">
+    <a govukLink [routerLink]="cancelLinkPath">Cancel</a>
+  </div>
+</form>

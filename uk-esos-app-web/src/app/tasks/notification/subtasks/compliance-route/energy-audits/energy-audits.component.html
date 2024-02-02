@@ -1,0 +1,22 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Add an energy audit (optional)"
+  caption="Compliance route"
+  submitText="Save and continue"
+  [hideSubmit]="!vm().isEditable"
+>
+  <p class="govuk-hint govuk-!-margin-bottom-9">
+    For each energy audit, include how many sites have been visited, and the reasons that they are representative of how
+    energy is used by the assets and activities during the audit period.
+  </p>
+  <div class="govuk-body">
+    <button govukSecondaryButton type="button" (click)="addEnergyAudit()">Add energy audit</button>
+
+    <esos-energy-audit-list
+      [vm]="vm()"
+      [complianceRoute]="complianceRoute"
+      (removeEnergyAudit)="removeEnergyAudit($event)"
+    ></esos-energy-audit-list>
+  </div>
+</esos-wizard-step>

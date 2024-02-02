@@ -1,0 +1,19 @@
+<esos-page-heading caption="Energy consumption">Check your answers</esos-page-heading>
+
+<ng-container *ngIf="vm() as vm">
+  <esos-energy-consumption-summary-page
+    [data]="vm.data"
+    [changeLink]="vm.wizardSteps"
+    [queryParams]="{ change: true }"
+    [isEditable]="vm.isEditable"
+  ></esos-energy-consumption-summary-page>
+
+  <button
+    *ngIf="vm.sectionsCompleted[vm.subtaskName] !== 'COMPLETED' && vm.isEditable"
+    (click)="submit()"
+    govukButton
+    type="button"
+  >
+    Confirm and continue
+  </button>
+</ng-container>

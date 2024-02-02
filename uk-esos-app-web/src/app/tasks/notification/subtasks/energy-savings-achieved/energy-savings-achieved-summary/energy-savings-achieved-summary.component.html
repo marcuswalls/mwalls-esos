@@ -1,0 +1,15 @@
+<ng-container *ngIf="vm() as vm">
+  <esos-page-heading caption="Energy savings achieved">Check your answers</esos-page-heading>
+
+  <esos-energy-savings-achieved-summary-page
+    *ngIf="vm.data"
+    [data]="vm.data"
+    [isEditable]="vm.isEditable"
+    [wizardStep]="wizardStep"
+    [queryParams]="vm.queryParams"
+  ></esos-energy-savings-achieved-summary-page>
+
+  <button *ngIf="vm.isEditable && !vm.isSubTaskCompleted" (click)="submit()" govukButton type="button">
+    Confirm and continue
+  </button>
+</ng-container>

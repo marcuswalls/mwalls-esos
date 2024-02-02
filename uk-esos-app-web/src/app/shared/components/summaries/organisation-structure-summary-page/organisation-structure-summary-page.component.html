@@ -1,0 +1,46 @@
+<dl govuk-summary-list>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>
+      Is the responsible undertaking part of an arrangement where 2 or more highest UK parent groups are complying as 1
+      participant?
+    </dt>
+    <dd govukSummaryListRowValue>{{ vm.data.isPartOfArrangement | booleanToText }}</dd>
+    <dd *ngIf="vm.isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="['./', vm.wizardStep.RU_DETAILS]" [queryParams]="queryParams"> Change </a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Is the responsible undertaking part of a franchise group?</dt>
+    <dd govukSummaryListRowValue>{{ vm.data.isPartOfFranchise | booleanToText }}</dd>
+    <dd *ngIf="vm.isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="['./', vm.wizardStep.RU_DETAILS]" [queryParams]="queryParams"> Change </a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Is the responsible undertaking a trust?</dt>
+    <dd govukSummaryListRowValue>{{ vm.data.isTrust | booleanToText }}</dd>
+    <dd *ngIf="vm.isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="['./', vm.wizardStep.RU_DETAILS]" [queryParams]="queryParams"> Change </a>
+    </dd>
+  </div>
+
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>
+      Has the responsible undertaking ceased to be a part of the corporate group between 31 December 2022 and 5 June
+      2024?
+    </dt>
+    <dd govukSummaryListRowValue>{{ vm.data.hasCeasedToBePartOfGroup | booleanToText }}</dd>
+    <dd *ngIf="vm.isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="['./', vm.wizardStep.RU_DETAILS]" [queryParams]="queryParams"> Change </a>
+    </dd>
+  </div>
+</dl>
+
+<esos-organisation-structure-list-table
+  [vm]="vmList()"
+  [organisationStructure]="organisationStructure"
+  (removeOrganisation)="removeOrganisation($event)"
+  [queryParams]="queryParams"
+></esos-organisation-structure-list-table>

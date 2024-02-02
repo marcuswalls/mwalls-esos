@@ -1,0 +1,9 @@
+<ng-container *ngIf="vm() as vm">
+  <esos-page-heading size="xl">Energy savings achieved</esos-page-heading>
+
+  <esos-energy-savings-achieved-summary-page
+    *ngIf="vm.data"
+    [data]="vm.data"
+    [wizardStep]="{}"
+  ></esos-energy-savings-achieved-summary-page>
+</ng-container>

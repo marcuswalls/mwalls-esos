@@ -1,0 +1,28 @@
+<ng-container *ngIf="data?.energyConsumption">
+  <h2 class="govuk-heading-m">
+    What is an estimate of the potential annual reduction in energy consumption in kWh which could be achieved as a
+    result of implementing all energy saving opportunities identified through energy audits?
+  </h2>
+
+  <esos-energy-consumption-details-summary-template
+    [energyConsumption]="data.energyConsumption"
+    [changeLink]="changeLink?.STEP1"
+    [isEditable]="isEditable"
+    [queryParams]="queryParams"
+  ></esos-energy-consumption-details-summary-template>
+</ng-container>
+
+<ng-container *ngIf="data?.energySavingsCategories">
+  <h2 class="govuk-heading-m">
+    What is an estimate of the potential annual reduction in energy consumption in kWh which could be achieved as a
+    result of implementing all energy saving opportunities against the following energy saving categories identified
+    through energy audits?
+  </h2>
+
+  <esos-energy-saving-categories-details-summary-template
+    [energySavingsCategories]="data?.energySavingsCategories"
+    [changeLink]="changeLink?.STEP2"
+    [isEditable]="isEditable"
+    [queryParams]="queryParams"
+  ></esos-energy-saving-categories-details-summary-template>
+</ng-container>

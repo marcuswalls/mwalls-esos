@@ -1,0 +1,107 @@
+<esos-wizard-step
+  [formGroup]="form"
+  [heading]="contentMap.complianceRouteDistribution.title"
+  [caption]="contentMap.title"
+  (formSubmit)="submit()"
+  submitText="Save and continue"
+  [hideSubmit]="!isEditable"
+>
+  <div
+    formControlName="iso50001Pct"
+    govuk-text-input
+    inputType="number"
+    label="ISO 50001"
+    suffix="%"
+    widthClass="govuk-input--width-3"
+  ></div>
+  <div
+    formControlName="displayEnergyCertificatePct"
+    govuk-text-input
+    inputType="number"
+    label="Display Energy Certificate (DECs)"
+    suffix="%"
+    widthClass="govuk-input--width-3"
+  ></div>
+  <div
+    formControlName="greenDealAssessmentPct"
+    govuk-text-input
+    inputType="number"
+    label="Green Deal Assessment"
+    suffix="%"
+    widthClass="govuk-input--width-3"
+  ></div>
+  <div
+    formControlName="energyAuditsPct"
+    govuk-text-input
+    inputType="number"
+    label="Energy audits that are compliant with ESOS"
+    suffix="%"
+    widthClass="govuk-input--width-3"
+  ></div>
+  <div
+    formControlName="energyNotAuditedPct"
+    govuk-text-input
+    inputType="number"
+    label="Energy use not audited"
+    suffix="%"
+    hint="If more than 5% of energy use is not audited, the organisation is not fully compliant with ESOS."
+    widthClass="govuk-input--width-3"
+  ></div>
+
+  <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible" />
+
+  <h2 class="govuk-heading-s govuk-!-margin-bottom-0">Total</h2>
+
+  <p class="govuk-body">The total for all compliance routes must be 100%.</p>
+
+  <p title="total" class="govuk-body">{{ total() }}%</p>
+
+  <govuk-details summary="Help me answer this question">
+    You must choose one or more routes to compliance that cover all your areas of significant energy consumption, see
+    <a
+      rel="noopener"
+      href="https://www.gov.uk/government/publications/comply-with-the-energy-savings-opportunity-scheme-esos/complying-with-the-energy-savings-opportunity-scheme-esos#section-4"
+      target="_blank"
+    >
+      section 4 (opens in a new tab) </a
+    >.
+
+    <br /><br />There are 4 ways to demonstrate that you've made a compliant ESOs assessment:
+
+    <ul>
+      <li>ISO 50001 certification</li>
+      <li>Display Energy Certificates (DECs)</li>
+      <li>Green Deal Assessments (GDAs)</li>
+      <li>ESOS compliant energy audits</li>
+    </ul>
+
+    <br />If you choose to comply with ESOS using an existing certification or assessment, it must have been issued
+    after 5 December 2015 and be valid at the compliance date – 5 December 2019 for the second compliance period.
+
+    <br /><br />Previous audit work, for instance performed as part of other energy audit schemes, can be used towards
+    compliance for ESOS provided it:
+
+    <ul>
+      <li>was conducted within the compliance period, and</li>
+      <li>
+        meets the minimum requirements of an ESOS energy audit, see
+        <a
+          rel="noopener"
+          href="https://www.gov.uk/government/publications/comply-with-the-energy-savings-opportunity-scheme-esos/complying-with-the-energy-savings-opportunity-scheme-esos#section-5-4-1"
+          target="_blank"
+          >section 5.4.1 (opens in a new tab)
+        </a>
+      </li>
+      <li>was not used for phase 1 compliance</li>
+    </ul>
+
+    <br />To understand each compliance route you can read the
+    <a
+      rel="noopener"
+      href="https://www.gov.uk/government/publications/comply-with-the-energy-savings-opportunity-scheme-esos/complying-with-the-energy-savings-opportunity-scheme-esos#considering-available-routes-to-compliance"
+      target="_blank"
+    >
+      ESOS guidance (opens in a new tab)
+    </a>
+  </govuk-details>
+</esos-wizard-step>

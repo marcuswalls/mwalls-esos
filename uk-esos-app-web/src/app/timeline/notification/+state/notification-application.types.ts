@@ -1,0 +1,3 @@
+import { NotificationOfComplianceP3ApplicationRequestActionPayload } from 'esos-api';
+
+export type NotificationApplicationTimelinePayload = NotificationOfComplianceP3ApplicationRequestActionPayload;

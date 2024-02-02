@@ -1,0 +1,24 @@
+<esos-page-heading caption="Organisation structure">
+  Add the organisations that are associated with this responsible undertaking
+</esos-page-heading>
+
+<p class="govuk-body">
+  Add the details of all active UK organisations that have been part of this responsible undertaking, as well as all UK
+  parent organisations, if applicable. You must add these organisations even if they are not included in this
+  notification.
+</p>
+<p class="govuk-body">We have already added the organisation making this notification.</p>
+
+<div class="govuk-button-group">
+  <a govukSecondaryButton [routerLink]="['../', OrganisationStructureWizardStep.ADD]" type="button">Add organisation</a>
+  <a govukSecondaryButton [routerLink]="['../', OrganisationStructureWizardStep.UPLOAD_CSV]" type="button">Upload a file instead</a>
+</div>
+
+<esos-organisation-structure-list-table
+  [vm]="vm()"
+  [organisationStructure]="organisationStructure"
+  (removeOrganisation)="removeOrganisation($event)"
+  [queryParams]="queryParams"
+></esos-organisation-structure-list-table>
+
+<a govukButton [routerLink]="[OrganisationStructureWizardStep.SUMMARY]" type="button">Save and continue</a>

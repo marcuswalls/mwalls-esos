@@ -1,0 +1,24 @@
+<esos-wizard-step
+  [formGroup]="form"
+  [heading]="alternativeComplianceRoutesMap.totalEnergyConsumptionReduction.title"
+  [caption]="alternativeComplianceRoutesMap.title"
+  (formSubmit)="onSubmit()"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <p class="govuk-body">
+    Enter the total potential reduction from implementing all energy saving opportunities from alternative compliance
+    routes.
+  </p>
+  <div
+    formControlName="totalEnergyConsumptionReduction"
+    govuk-text-input
+    inputType="number"
+    label="Total Energy in kWh"
+    [widthClass]="'govuk-!-width-one-third'"
+    suffix="kWh"
+  ></div>
+  <govuk-details summary="Help me answer this question">
+    <p class="govuk-body">TBD</p>
+  </govuk-details>
+</esos-wizard-step>

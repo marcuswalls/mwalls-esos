@@ -1,0 +1,13 @@
+<h2 class="govuk-heading-m">
+  Enter details of any government support received in order to implement energy saving measures during the compliance
+  period (optional)
+</h2>
+
+<dl govuk-summary-list>
+  <div govukSummaryListRow>
+    <dd govukSummaryListRowValue class="pre-wrap">{{ energySavingsDetails }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="changeLink" [queryParams]="queryParams">Change</a>
+    </dd>
+  </div>
+</dl>

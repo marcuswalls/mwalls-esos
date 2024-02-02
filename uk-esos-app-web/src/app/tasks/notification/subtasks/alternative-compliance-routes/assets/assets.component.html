@@ -1,0 +1,24 @@
+<esos-wizard-step
+  [formGroup]="form"
+  [heading]="alternativeComplianceRoutesMap.assets.title"
+  [caption]="alternativeComplianceRoutesMap.title"
+  (formSubmit)="onSubmit()"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <div *ngIf="isIso50001Enabled" formControlName="iso50001" govuk-textarea label="ISO 50001" [maxLength]="10000"></div>
+  <div
+    *ngIf="isDecEnabled"
+    formControlName="dec"
+    govuk-textarea
+    label="Display Energy Certificate (DECs)"
+    [maxLength]="10000"
+  ></div>
+  <div
+    *ngIf="isGdaEnabled"
+    formControlName="gda"
+    govuk-textarea
+    label="Green Deal Assessment"
+    [maxLength]="10000"
+  ></div>
+</esos-wizard-step>

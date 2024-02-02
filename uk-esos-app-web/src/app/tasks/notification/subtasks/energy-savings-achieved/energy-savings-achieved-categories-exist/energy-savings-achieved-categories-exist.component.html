@@ -1,0 +1,13 @@
+<esos-wizard-step
+  (formSubmit)="submit()"
+  [formGroup]="form"
+  heading="Do you have any information on the energy savings achieved during the compliance period against different energy saving categories?"
+  caption="Energy savings achieved"
+  submitText="Save and continue"
+  [hideSubmit]="false"
+>
+  <div formControlName="energySavingCategoriesExist" govuk-radio>
+    <govuk-radio-option [value]="true" label="Yes"> </govuk-radio-option>
+    <govuk-radio-option [value]="false" label="No"></govuk-radio-option>
+  </div>
+</esos-wizard-step>

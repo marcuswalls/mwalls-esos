@@ -1,0 +1,66 @@
+<h2 esos-summary-header class="govuk-heading-m">Organisation details</h2>
+<dl govuk-summary-list class="govuk-!-margin-bottom-9">
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Is the UK organisation registered at Companies House?</dt>
+    <dd govukSummaryListRowValue>{{ organisation?.registrationNumber ? 'Yes' : 'No' }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="[linkPrefix]" [relativeTo]="route">Change</a>
+    </dd>
+  </div>
+  <ng-container *ngIf="organisation.registrationNumber as registrationNumber">
+    <div govukSummaryListRow>
+      <dt govukSummaryListRowKey>Company Registration Number</dt>
+      <dd govukSummaryListRowValue>{{ registrationNumber }}</dd>
+      <dd *ngIf="isEditable" govukSummaryListRowActions>
+        <a govukLink [routerLink]="[linkPrefix]" [relativeTo]="route">Change</a>
+      </dd>
+    </div>
+  </ng-container>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Organisation name</dt>
+    <dd govukSummaryListRowValue>{{ organisation.name }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="[linkPrefix] + '/name'" [relativeTo]="route">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Address</dt>
+    <dd govukSummaryListRowValue>
+      {{ organisation.line1 }} <br />
+      <span *ngIf="organisation?.line2 as line2">{{ line2 }}</span>
+    </dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="[linkPrefix] + '/address'" [relativeTo]="route">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Town or city</dt>
+    <dd govukSummaryListRowValue>{{ organisation.city }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="[linkPrefix] + '/address'" [relativeTo]="route">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>County</dt>
+    <dd govukSummaryListRowValue>{{ organisation.county }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="[linkPrefix] + '/address'" [relativeTo]="route">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>Post code</dt>
+    <dd govukSummaryListRowValue>{{ organisation.postcode }}</dd>
+    <dd *ngIf="isEditable" govukSummaryListRowActions>
+      <a govukLink [routerLink]="[linkPrefix] + '/address'" [relativeTo]="route">Change</a>
+    </dd>
+  </div>
+  <div govukSummaryListRow>
+    <dt govukSummaryListRowKey>
+      Location of registered office or principal place of activity (where no registered office exists)
+    </dt>
+    <dd govukSummaryListRowValue>{{ organisation.competentAuthority | competentAuthorityLocation }}</dd>
+    <dd *ngIf="isEditable && canChangeCA" govukSummaryListRowActions>
+      <a govukLink [routerLink]="[linkPrefix] + '/location'" [relativeTo]="route">Change</a>
+    </dd>
+  </div>
+</dl>

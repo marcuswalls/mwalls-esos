@@ -1,0 +1,100 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, Router } from '@angular/router';
+
+import { of } from 'rxjs';
+
+import { SideEffectsHandler } from '@common/forms/side-effects';
+import { RequestTaskStore } from '@common/request-task/+state';
+import {
+  provideNotificationSideEffects,
+  provideNotificationStepFlowManagers,
+  provideNotificationTaskServices,
+} from '@tasks/notification/notification.providers';
+import { mockEnergySavingOpportunities, mockStateBuild } from '@tasks/notification/testing/mock-data';
+import { TaskItemStatus } from '@tasks/task-item-status';
+import { ActivatedRouteStub, BasePage, MockType } from '@testing';
+
+import { TasksService } from 'esos-api';
+
+import { EnergySavingsOpportunityCategoriesComponent } from './energy-savings-opportunity-categories.component';
+
+describe('EnergySavingsOpportunityCategoriesComponent', () => {
+  let component: EnergySavingsOpportunityCategoriesComponent;
+  let fixture: ComponentFixture<EnergySavingsOpportunityCategoriesComponent>;
+
+  let store: RequestTaskStore;
+  let router: Router;
+  let page: Page;
+
+  const route = new ActivatedRouteStub();
+
+  const tasksService: MockType<TasksService> = {
+    processRequestTaskAction: jest.fn().mockReturnValue(of(null)),
+  };
+
+  const seState = () => {
+    store.setState(
+      mockStateBuild(
+        { energySavingsOpportunities: { ...mockEnergySavingOpportunities } },
+        { energySavingsOpportunities: TaskItemStatus.IN_PROGRESS },
+      ),
+    );
+  };
+
+  class Page extends BasePage<EnergySavingsOpportunityCategoriesComponent> {
+    get submitButton() {
+      return this.query<HTMLButtonElement>('button[type="submit"]');
+    }
+    get errorSummary() {
+      return this.query<HTMLDivElement>('govuk-error-summary');
+    }
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideNotificationTaskServices(),
+        provideNotificationSideEffects(),
+        provideNotificationStepFlowManagers(),
+        RequestTaskStore,
+        SideEffectsHandler,
+        { provide: ActivatedRoute, useValue: route },
+        { provide: TasksService, useValue: tasksService },
+      ],
+    });
+
+    store = TestBed.inject(RequestTaskStore);
+    seState();
+
+    fixture = TestBed.createComponent(EnergySavingsOpportunityCategoriesComponent);
+    component = fixture.componentInstance;
+    page = new Page(fixture);
+    router = TestBed.inject(Router);
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should navigate to the next page after submitting valid data and display the correct headings', async () => {
+    const navigateSpy = jest.spyOn(router, 'navigate');
+    page.submitButton.click();
+    fixture.detectChanges();
+
+    expect(page.errorSummary).toBeFalsy();
+    expect(tasksService.processRequestTaskAction).toHaveBeenCalled();
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement;
+
+    expect(compiled.textContent).toContain('Energy savings opportunities');
+    expect(compiled.textContent).toContain(
+      'What is an estimate of the potential annual reduction in energy consumption in kWh which could be achieved as a result of implementing all energy saving opportunities against the following energy saving categories identified through energy audits?',
+    );
+
+    expect(navigateSpy).toHaveBeenCalledWith(['../'], { relativeTo: route });
+  });
+});

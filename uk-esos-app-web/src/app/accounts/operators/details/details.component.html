@@ -1,0 +1,27 @@
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <form (ngSubmit)="onSubmit()" *ngIf="form$ | async as form" [formGroup]="form">
+      <govuk-error-summary *ngIf="isSummaryDisplayed | async" [form]="form"></govuk-error-summary>
+      <esos-page-heading size="xl">User details</esos-page-heading>
+      <esos-user-input phoneType="full"></esos-user-input>
+
+      <ng-template #address>
+        <esos-address-input formGroupName="address"></esos-address-input>
+      </ng-template>
+
+      <esos-two-fa-link
+        [title]="
+          (isLoggedUser$ | async) === true ? 'Change two factor authentication' : 'Reset two-factor authentication'
+        "
+        [link]="(isLoggedUser$ | async) === true ? '2fa/change' : '2fa/reset-2fa'"
+        [userId]="userId$ | async"
+        [accountId]="accountId$ | async"
+        [userName]="userFullName"
+        [role]="'OPERATOR'"
+      >
+      </esos-two-fa-link>
+
+      <button esosPendingButton govukButton type="submit">Save</button>
+    </form>
+  </div>
+</div>

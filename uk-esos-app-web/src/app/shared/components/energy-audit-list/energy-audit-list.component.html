@@ -1,0 +1,37 @@
+<h3 class="govuk-heading-m">{{ vm.header }}</h3>
+
+<ng-container *ngIf="complianceRoute().energyAudits?.length > 0; else noEnergyAudits">
+  <govuk-table [columns]="columns" [data]="complianceRoute().energyAudits">
+    <ng-template let-column="column" let-index="index" let-row="row">
+      <div [ngSwitch]="column.field">
+        <ng-container *ngSwitchCase="'index'">
+          <div>{{ index + 1 }}</div>
+        </ng-container>
+
+        <ng-container *ngSwitchDefault>
+          <div class="pre-wrap">{{ row[column.field] }}</div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'actions'">
+          <div *ngIf="vm.isEditable" class="actions">
+            <a
+              govukLink
+              [routerLink]="[vm.prefix, index + 1, vm.wizardStep.EDIT_ENERGY_AUDIT]"
+              [queryParams]="{ change: true }"
+            >
+              Change
+            </a>
+
+            <a class="govuk-!-padding-left-3" govukLink [routerLink]="[]" (click)="onRemoveEnergyAudit(index)">
+              Remove
+            </a>
+          </div>
+        </ng-container>
+      </div>
+    </ng-template>
+  </govuk-table>
+</ng-container>
+
+<ng-template #noEnergyAudits>
+  <p>No energy audits have been added</p>
+</ng-template>

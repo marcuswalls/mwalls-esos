@@ -1,0 +1,10 @@
+<ng-container *ngIf="vm() as vm">
+  <esos-page-heading size="xl">Second compliance period</esos-page-heading>
+
+  <esos-compliance-periods-summary-page
+    *ngIf="vm.data"
+    [compliancePeriod]="vm.data"
+    [isFirstCompliancePeriod]="false"
+    [wizardStep]="vm.wizardStep"
+  ></esos-compliance-periods-summary-page>
+</ng-container>

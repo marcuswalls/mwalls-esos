@@ -1,0 +1,19 @@
+<esos-wizard-step
+  [formGroup]="form"
+  [heading]="contentMap.qualificationReasons.title"
+  [caption]="contentMap.title"
+  (formSubmit)="submit()"
+  submitText="Save and continue"
+  [hideSubmit]="!isEditable"
+>
+  <div govuk-checkboxes formControlName="qualificationReasons">
+    <govuk-checkbox
+      value="TURNOVER_MORE_THAN_44M"
+      label="The annual turnover is over &#163;44 million and annual balance sheet total in excess of &#163;38 million"
+    ></govuk-checkbox>
+    <govuk-checkbox
+      value="STAFF_MEMBERS_MORE_THAN_250"
+      label="The organisation has over 250 members of staff"
+    ></govuk-checkbox>
+  </div>
+</esos-wizard-step>

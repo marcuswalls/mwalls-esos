@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/changelog_user_authority.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+    
+    <changeSet id="0_1_0_add_PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK_to_regulator_roles" author="P70453">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(1) from au_role_permission where permission='PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK'
+                                                                         and role_id=(select id from au_role where code='regulator_admin_team')
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                select count(1) from au_role_permission where permission='PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK'
+                                                                         and role_id=(select id from au_role where code='regulator_technical_officer')
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                select count(1) from au_role_permission where permission='PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK'
+                                                                         and role_id=(select id from au_role where code='regulator_team_leader')
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                select count(1) from au_role_permission where permission='PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK'
+                                                                         and role_id=(select id from au_role where code='ca_super_user')
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                select count(1) from au_role_permission where permission='PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK'
+                                                                         and role_id=(select id from au_role where code='service_super_user')
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            insert into au_role_permission(id, role_id, permission)
+            select nextval('au_role_permission_seq'), id, 'PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK'
+            from au_role
+            where code in ('regulator_admin_team', 'regulator_technical_officer', 'regulator_team_leader', 'ca_super_user', 'service_super_user');
+        </sql>
+        <rollback>
+            <sql>
+                delete
+                from au_role_permission rp
+                using au_role r
+                where r.id = rp.role_id
+                and r.code in ('regulator_admin_team', 'regulator_technical_officer', 'regulator_team_leader', 'ca_super_user', 'service_super_user')
+                and rp.permission = 'PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK'
+                ;
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_add_PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_EXECUTE_TASK_to_regulator_roles" author="P70453">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select count(1) from au_role_permission where permission='PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_EXECUTE_TASK'
+                                                                         and role_id=(select id from au_role where code='regulator_technical_officer')
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                select count(1) from au_role_permission where permission='PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_EXECUTE_TASK'
+                                                                         and role_id=(select id from au_role where code='regulator_team_leader')
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                select count(1) from au_role_permission where permission='PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_EXECUTE_TASK'
+                                                                         and role_id=(select id from au_role where code='ca_super_user')
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                select count(1) from au_role_permission where permission='PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_EXECUTE_TASK'
+                                                                         and role_id=(select id from au_role where code='service_super_user')
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            insert into au_role_permission(id, role_id, permission)
+            select nextval('au_role_permission_seq'), id, 'PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_EXECUTE_TASK'
+            from au_role
+            where code in ('regulator_technical_officer', 'regulator_team_leader', 'ca_super_user', 'service_super_user');
+        </sql>
+        <rollback>
+            <sql>
+                delete
+                from au_role_permission rp
+                using au_role r
+                where r.id = rp.role_id
+                and r.code in ('regulator_technical_officer', 'regulator_team_leader', 'ca_super_user', 'service_super_user')
+                and rp.permission = 'PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_EXECUTE_TASK'
+                ;
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_add_permission_PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_EDIT_VIEW_TASK_to_operator_roles" author="pafilisa@unisystems.gr">
+        <sql>
+            insert into au_role_permission(id, role_id, permission)
+            select nextval('au_role_permission_seq'), id, 'PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_EDIT_VIEW_TASK'
+            from au_role
+            where code in ('operator_admin', 'operator');
+        </sql>
+
+        <rollback>
+            <sql>
+                delete
+                from au_role_permission
+                where role_id in (select id from au_role where code in ('operator_admin', 'operator'))
+                and permission = 'PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_EDIT_VIEW_TASK';
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_add_permission_PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_EDIT_EXECUTE_TASK_to_operator_roles" author="pafilisa@unisystems.gr">
+        <sql>
+            insert into au_role_permission(id, role_id, permission)
+            select nextval('au_role_permission_seq'), id, 'PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_EDIT_EXECUTE_TASK'
+            from au_role
+            where code = 'operator';
+        </sql>
+
+        <rollback>
+            <sql>
+                delete
+                from au_role_permission
+                where role_id in (select id from au_role where code = 'operator')
+                and permission = 'PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_EDIT_EXECUTE_TASK';
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_add_permission_PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_SUBMIT_VIEW_TASK_TASK_to_operator_roles" author="P70383">
+        <sql>
+            insert into au_role_permission(id, role_id, permission)
+            select nextval('au_role_permission_seq'), id, 'PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_SUBMIT_VIEW_TASK'
+            from au_role
+            where code in ('operator_admin', 'operator');
+        </sql>
+
+        <rollback>
+            <sql>
+                delete
+                from au_role_permission
+                where role_id in (select id from au_role where code in ('operator_admin', 'operator'))
+                and permission = 'PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_SUBMIT_VIEW_TASK';
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_add_permission_PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_SUBMIT_EXECUTE_TASK_to_operator_roles" author="P70383">
+        <sql>
+            insert into au_role_permission(id, role_id, permission)
+            select nextval('au_role_permission_seq'), id, 'PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_SUBMIT_EXECUTE_TASK'
+            from au_role
+            where code = 'operator_admin';
+        </sql>
+
+        <rollback>
+            <sql>
+                delete
+                from au_role_permission
+                where role_id in (select id from au_role where code = 'operator_admin')
+                and permission = 'PERM_NOTIFICATION_OF_COMPLIANCE_APPLICATION_SUBMIT_EXECUTE_TASK';
+            </sql>
+        </rollback>
+    </changeSet>
+    
+    <changeSet id="0_1_0_remove_PERM_ACCOUNT_USERS_EDIT_FROM_REGULATORS" author="apostolouk@unisystems.gr">
+        <sql>
+            delete from au_role_permission arp
+            using au_role ar
+            where arp.role_id = ar.id
+            and ar.type = 'REGULATOR'
+            and arp.permission = 'PERM_ACCOUNT_USERS_EDIT';
+        </sql>
+    </changeSet>
+    
+    <changeSet id="0_1_0_remove_PERM_ACCOUNT_USERS_EDIT_for_existing_regulators" author="apostolouk@unisystems.gr">
+        <sql>
+            delete from au_authority_permission aap
+            using au_authority aa
+            where aap.authority_id = aa.id
+            and (aa.code is null or aa.code in 
+            	('service_super_user', 'ca_super_user', 'regulator_team_leader', 'regulator_technical_officer', 'regulator_admin_team'))
+            and aap.permission = 'PERM_ACCOUNT_USERS_EDIT';
+        </sql>
+    </changeSet>
+
+    <changeSet id="0_1_0_delete_EMITTER_CONTACT_AND_CONSULTANT_ROLES_FOR_ESOS" author="apostolouk@unisystems.gr">
+        <sql>
+            delete from au_role_permission arp
+            using au_role ar
+            where arp.role_id = ar.id
+            and ar.code in ('emitter_contact', 'consultant_agent');
+            
+            delete from au_role
+            where code in ('emitter_contact', 'consultant_agent');
+        </sql>
+    </changeSet>
+    
+    <changeSet id="0_1_0_change_name_for_OPERATOR_ADMIN_AND_OPERATOR_codes" author="apostolouk@unisystems.gr">
+        <sql>
+            update au_role
+            set name = 'Advanced user'
+			where code = 'operator_admin';
+			
+			update au_role
+            set name = 'Restricted user'
+			where code = 'operator';
+        </sql>
+    </changeSet>
+    
+    <changeSet id="0_1_0_remove_PERM_TASK_ASSIGNMENT_FROM_RESTRICTED_USERS" author="apostolouk@unisystems.gr">
+        <sql>
+            delete from au_role_permission arp
+            using au_role ar
+            where arp.role_id = ar.id
+            and ar.code = 'operator'
+            and arp.permission = 'PERM_TASK_ASSIGNMENT';
+        </sql>
+    </changeSet>
+    
+</databaseChangeLog>

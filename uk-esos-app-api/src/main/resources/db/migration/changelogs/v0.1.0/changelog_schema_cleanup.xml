@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/changelog_schema_cleanup.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="0_1_0_DROP_NOTIFICATION_SYSTEM_MESSAGE_TABLE" author="pafilisa@unisystems.gr" logicalFilePath="v0.1.0/changelog_notification_system_message.xml">
+        <sql>
+            DROP TABLE IF EXISTS notification_system_message;
+        </sql>
+
+        <rollback>
+            <sql>
+                CREATE TABLE notification_system_message (
+                id bigint,
+                type VARCHAR(255) NOT NULL,
+                subject VARCHAR(255) NOT NULL,
+                text TEXT NOT NULL,
+                creation_date TIMESTAMP NOT NULL,
+                competent_authority VARCHAR(255),
+                account_id bigint,
+                receiver VARCHAR(255) NOT NULL,
+                verification_body_id bigint);
+
+                ALTER TABLE notification_system_message ADD CONSTRAINT notification_system_message_pk PRIMARY KEY (id);
+
+                COMMENT ON TABLE notification_system_message IS 'Stores information about created notification system messages';
+                COMMENT ON COLUMN notification_system_message.type IS 'The notification system message type';
+                COMMENT ON COLUMN notification_system_message.subject IS 'The notification system message subject';
+                COMMENT ON COLUMN notification_system_message.text IS 'The notification system message text';
+                COMMENT ON COLUMN notification_system_message.creation_date IS 'The date-time that the notification system message was created';
+                COMMENT ON COLUMN notification_system_message.competent_authority IS 'The competent authority the notification system message is related to';
+                COMMENT ON COLUMN notification_system_message.account_id IS 'The account id the notification system message is related to';
+                COMMENT ON COLUMN notification_system_message.receiver IS 'The receiver (user id) of the notification system message';
+                COMMENT ON COLUMN notification_system_message.verification_body_id IS 'The verification body id the the notification system message is related to';
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_NOTIFICATION_SYSTEM_MESSAGE_SEQUENCE" author="pafilisa@unisystems.gr" logicalFilePath="v0.1.0/changelog_notification_system_message.xml">
+        <sql>
+            DROP SEQUENCE IF EXISTS notification_system_message_seq;
+        </sql>
+
+        <rollback>
+            <sql>
+                CREATE SEQUENCE notification_system_message_seq MINVALUE 0 MAXVALUE 999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 1 NO CYCLE;
+            </sql>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_AER_TABLE" author="pafilisa@unisystems.gr">
+        <sql>
+            DROP TABLE IF EXISTS aer;
+        </sql>
+
+        <rollback>
+            <createTable tableName="aer" remarks="Represents an aer">
+                <column name="id" type="varchar(20)" remarks="Primary key">
+                    <constraints primaryKey="true" primaryKeyName="aer_pk" nullable="false"/>
+                </column>
+                <column name="data" type="jsonb" remarks="aer representation as json">
+                    <constraints nullable="false" />
+                </column>
+                <column name="account_id" type="bigint" remarks="The aer's account id">
+                    <constraints nullable="false" />
+                </column>
+                <column name="year" type="int" remarks="The aer's year">
+                    <constraints nullable="false" />
+                </column>
+            </createTable>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_AER_SEQUENCE" author="pafilisa@unisystems.gr">
+        <sql>
+            DROP SEQUENCE IF EXISTS aer_seq;
+        </sql>
+
+        <rollback>
+            <createSequence sequenceName="aer_seq" minValue="0" maxValue="999999999999999999"
+                            incrementBy="1" startValue="1" cycle="false"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_ALLOWANCE_TABLES" author="apostolouk@unisystems.gr">
+        <comment>Delete allowance_allocation and allowance_activity_level tables</comment>
+        <sql>
+            DROP SEQUENCE IF EXISTS allowance_activity_level_seq;
+            DROP TABLE IF EXISTS allowance_activity_level CASCADE;
+            DROP SEQUENCE IF EXISTS allowance_allocation_seq;
+            DROP TABLE IF EXISTS allowance_allocation CASCADE;
+        </sql>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_AER_AND_REPORTABLE_EMISSIONS_TABLES" author="apostolouk@unisystems.gr">
+        <comment>Delete aviation_rpt_aer and aviation_rpt_reportable_emissions tables</comment>
+        <sql>
+            DROP TABLE IF EXISTS aviation_rpt_aer CASCADE;
+            DROP SEQUENCE IF EXISTS aviation_rpt_reportable_emissions_seq;
+            DROP TABLE IF EXISTS aviation_rpt_reportable_emissions CASCADE;
+        </sql>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_AVIATION_RPT_AIRPORTS_TABLES" author="apostolouk@unisystems.gr">
+        <comment>Delete aviation_rpt_airports table</comment>
+        <sql>
+            DROP SEQUENCE IF EXISTS aviation_rpt_airports_seq;
+            DROP TABLE IF EXISTS aviation_rpt_airports CASCADE;
+        </sql>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_AVIATION_RPT_COUNTRIES_TABLES" author="apostolouk@unisystems.gr">
+        <comment>Delete aviation_rpt_airports table</comment>
+        <sql>
+            DROP SEQUENCE IF EXISTS aviation_rpt_countries_seq;
+            DROP TABLE IF EXISTS aviation_rpt_countries CASCADE;
+        </sql>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_EMP_TABLES" author="apostolouk@unisystems.gr">
+        <comment>Delete emp, emp_issuing_authority, emp_aircraft_type tables</comment>
+        <sql>
+            DROP TABLE IF EXISTS emp_aircraft_type CASCADE;
+            DROP SEQUENCE IF EXISTS emp_issuing_authority_seq;
+            DROP TABLE IF EXISTS emp_issuing_authority CASCADE;
+            DROP TABLE IF EXISTS emp CASCADE;
+        </sql>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_PERMIT_TABLE" author="apostolouk@unisystems.gr">
+        <comment>Delete permit table</comment>
+        <sql>
+            DROP SEQUENCE IF EXISTS permit_seq;
+            DROP TABLE IF EXISTS permit CASCADE;
+        </sql>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_REPORTING_TABLES" author="apostolouk@unisystems.gr">
+        <comment>Delete rpt_aer, rpt_charging_zone, rpt_ipcc_sector, rpt_national_inventory_data, rpt_post_code, rpt_regional_inventory_data, rpt_reportable emissions tables</comment>
+        <sql>
+            DROP SEQUENCE IF EXISTS rpt_reportable_emissions_seq;
+            DROP TABLE IF EXISTS rpt_reportable_emissions CASCADE;
+            DROP TABLE IF EXISTS rpt_ipcc_sector CASCADE;
+            DROP SEQUENCE IF EXISTS rpt_national_inventory_data_seq;
+            DROP TABLE IF EXISTS rpt_national_inventory_data CASCADE;
+            DROP SEQUENCE IF EXISTS rpt_regional_inventory_data_seq;
+            DROP TABLE IF EXISTS rpt_regional_inventory_data CASCADE;
+            DROP SEQUENCE IF EXISTS rpt_post_code_seq;
+            DROP TABLE IF EXISTS rpt_post_code CASCADE;
+            DROP SEQUENCE IF EXISTS rpt_charging_zone_seq;
+            DROP TABLE IF EXISTS rpt_charging_zone CASCADE;
+            DROP TABLE IF EXISTS rpt_aer CASCADE;
+        </sql>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_USER_LOGIN_DOMAIN_TABLE" author="P70383">
+        <sql>
+            DROP TABLE IF EXISTS user_login_domain CASCADE;
+        </sql>
+
+        <rollback>
+            <createTable tableName="user_login_domain" remarks="Represents the last login domain of user">
+                <column name="user_id" type="varchar(64)" remarks="The user id">
+                    <constraints primaryKey="true" primaryKeyName="user_login_domain_pk" nullable="false"/>
+                </column>
+                <column name="last_login_domain" type="varchar(255)" remarks="The domain to which the user was logged in the last time">
+                    <constraints nullable="false" />
+                </column>
+            </createTable>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_authority_account_fk" author="P70453">
+        <preConditions onFail="MARK_RAN">
+            <foreignKeyConstraintExists foreignKeyName="authority_account_fk"/>
+        </preConditions>
+        <comment>Drop authority_account_fk</comment>
+        <dropForeignKeyConstraint baseTableName="au_authority" constraintName="authority_account_fk"/>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_permission_column_from_au_rule" author="P70453">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="au_rule" columnName="permission"/>
+        </preConditions>
+        <dropColumn tableName="au_rule" columnName="permission"/>
+        <rollback>
+            <addColumn tableName="au_rule">
+                <column name="permission" type="varchar(255)">
+                    <constraints nullable="true" />
+                </column>
+            </addColumn>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_LEGAL_ENTITY_ID_COLUMN_FROM_ACCOUNT_TABLE" author="pafilisa@unisystems.gr">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="account" columnName="legal_entity_id"/>
+        </preConditions>
+        <dropColumn tableName="account" columnName="legal_entity_id"/>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_LOCATION_ID_COLUMN_FROM_ACCOUNT_TABLE" author="pafilisa@unisystems.gr">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="account" columnName="location_id"/>
+        </preConditions>
+        <dropColumn tableName="account" columnName="location_id"/>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_COMMENCEMENT_DATE_COLUMN_FROM_ACCOUNT_TABLE" author="pafilisa@unisystems.gr">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="account" columnName="commencement_date"/>
+        </preConditions>
+        <dropColumn tableName="account" columnName="commencement_date"/>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_MIGRATED_ACCOUNT_ID_COLUMN_FROM_ACCOUNT_TABLE" author="pafilisa@unisystems.gr">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="account" columnName="migrated_account_id"/>
+        </preConditions>
+        <dropColumn tableName="account" columnName="migrated_account_id"/>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_EMITTER_ID_COLUMN_FROM_ACCOUNT_TABLE" author="pafilisa@unisystems.gr">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="account" columnName="emitter_id"/>
+        </preConditions>
+        <dropColumn tableName="account" columnName="emitter_id"/>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_SOP_ID_COLUMN_FROM_ACCOUNT_TABLE" author="pafilisa@unisystems.gr">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="account" columnName="sop_id"/>
+        </preConditions>
+        <dropColumn tableName="account" columnName="sop_id"/>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_REGISTRY_ID_COLUMN_FROM_ACCOUNT_TABLE" author="pafilisa@unisystems.gr">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="account" columnName="registry_id"/>
+        </preConditions>
+        <dropColumn tableName="account" columnName="registry_id"/>
+    </changeSet>
+
+    <changeSet id="0_1_0_DROP_ACCOUNT_DOMAIN_OBJECTS" author="pafilisa@unisystems.gr">
+        <sql>
+            DROP SEQUENCE IF EXISTS account_aviation_reporting_status_history_seq;
+            DROP TABLE IF EXISTS account_aviation CASCADE;
+            DROP TABLE IF EXISTS account_aviation_reporting_status_history CASCADE;
+
+            DROP TABLE IF EXISTS account_installation CASCADE;
+
+            DROP SEQUENCE IF EXISTS account_holding_company_seq;
+            DROP TABLE IF EXISTS account_holding_company CASCADE;
+
+            DROP SEQUENCE IF EXISTS account_legal_entity_seq;
+            DROP TABLE IF EXISTS account_legal_entity CASCADE;
+
+            DROP SEQUENCE IF EXISTS account_location_seq;
+            DROP TABLE IF EXISTS account_location CASCADE;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

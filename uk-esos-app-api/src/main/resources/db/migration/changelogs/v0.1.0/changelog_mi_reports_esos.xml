@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/changelog_mi_reports.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="0_1_0_initialize_mi_report" author="P70453">
+        <sql>
+            truncate table mi_report cascade;
+        </sql>
+        <rollback>
+        </rollback>
+    </changeSet>
+    
+    <changeSet id="0_1_0_create_mi_report_esos" author="P70605">
+        <sql>
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((1), 'OPRED', 'COMPLETED_WORK', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'WALES', 'COMPLETED_WORK', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'ENGLAND', 'COMPLETED_WORK', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'SCOTLAND', 'COMPLETED_WORK', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'NORTHERN_IRELAND', 'COMPLETED_WORK', 'ORGANISATION');
+
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'ENGLAND', 'LIST_OF_ACCOUNTS_ASSIGNED_REGULATOR_SITE_CONTACTS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'WALES', 'LIST_OF_ACCOUNTS_ASSIGNED_REGULATOR_SITE_CONTACTS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'SCOTLAND', 'LIST_OF_ACCOUNTS_ASSIGNED_REGULATOR_SITE_CONTACTS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'OPRED', 'LIST_OF_ACCOUNTS_ASSIGNED_REGULATOR_SITE_CONTACTS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'NORTHERN_IRELAND', 'LIST_OF_ACCOUNTS_ASSIGNED_REGULATOR_SITE_CONTACTS', 'ORGANISATION');
+
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'ENGLAND', 'LIST_OF_ACCOUNTS_USERS_CONTACTS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'NORTHERN_IRELAND', 'LIST_OF_ACCOUNTS_USERS_CONTACTS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'OPRED', 'LIST_OF_ACCOUNTS_USERS_CONTACTS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'SCOTLAND', 'LIST_OF_ACCOUNTS_USERS_CONTACTS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'WALES', 'LIST_OF_ACCOUNTS_USERS_CONTACTS', 'ORGANISATION');
+
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'WALES', 'REGULATOR_OUTSTANDING_REQUEST_TASKS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'SCOTLAND', 'REGULATOR_OUTSTANDING_REQUEST_TASKS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'OPRED', 'REGULATOR_OUTSTANDING_REQUEST_TASKS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'NORTHERN_IRELAND', 'REGULATOR_OUTSTANDING_REQUEST_TASKS', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'ENGLAND', 'REGULATOR_OUTSTANDING_REQUEST_TASKS', 'ORGANISATION');
+
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'ENGLAND', 'CUSTOM', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'WALES', 'CUSTOM', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'SCOTLAND', 'CUSTOM', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'OPRED', 'CUSTOM', 'ORGANISATION');
+            INSERT INTO mi_report (id, competent_authority, type, account_type) VALUES ((SELECT MAX(id) + 1 FROM mi_report), 'NORTHERN_IRELAND', 'CUSTOM', 'ORGANISATION');
+
+        </sql>
+    </changeSet>
+</databaseChangeLog>

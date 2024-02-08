@@ -50,4 +50,4 @@ Below are major components of the ESOS service and the code repos: 
 - ESOS Admin  
 - Static pages
 
-Updated Feb 2004
+Updated Feb 2024

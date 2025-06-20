@@ -13,7 +13,13 @@
     </modules>
 
     <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.jacoco.plugin>0.8.8</maven.jacoco.plugin>
+        <maven.surefire.plugin>3.2.5</maven.surefire.plugin>
+        <maven.failsafe.plugin>3.2.5</maven.failsafe.plugin>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco-merged/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
@@ -22,6 +28,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven.failsafe.plugin}</version>
                 <configuration>
                     <argLine>${failsafe.jacoco.args}</argLine>
                 </configuration>
@@ -29,6 +36,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin}</version>
                 <configuration>
                     <argLine>${surefire.jacoco.args}</argLine>
                 </configuration>

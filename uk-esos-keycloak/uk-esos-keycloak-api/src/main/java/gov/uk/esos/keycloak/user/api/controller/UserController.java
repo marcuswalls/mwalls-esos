@@ -1,5 +1,6 @@
 package gov.uk.esos.keycloak.user.api.controller;
 
+import gov.uk.esos.keycloak.user.api.annotation.NoCache;
 import gov.uk.esos.keycloak.user.api.model.SignatureDTO;
 import gov.uk.esos.keycloak.user.api.model.UserDetailsDTO;
 import gov.uk.esos.keycloak.user.api.model.UserDetailsRequestDTO;
@@ -8,7 +9,6 @@ import gov.uk.esos.keycloak.user.api.model.UserOtpValidationDTO;
 import gov.uk.esos.keycloak.user.api.service.UserDetailsService;
 import gov.uk.esos.keycloak.user.api.service.UserEntityService;
 import gov.uk.esos.keycloak.user.api.service.UserOtpService;
-import org.jboss.resteasy.annotations.cache.NoCache;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -25,7 +25,8 @@ public class UserController {
     private final UserDetailsService userDetailsService;
     private final UserOtpService userOtpService;
 
-    public UserController(UserEntityService userEntityService, UserDetailsService userDetailsService, UserOtpService userOtpService) {
+    public UserController(UserEntityService userEntityService, UserDetailsService userDetailsService,
+            UserOtpService userOtpService) {
         this.userEntityService = userEntityService;
         this.userDetailsService = userDetailsService;
         this.userOtpService = userOtpService;
@@ -36,10 +37,10 @@ public class UserController {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<UserInfo> getUsers(List<String> userIds,
-                                   @QueryParam("includeAttributes") boolean includeAttributes) {
+            @QueryParam("includeAttributes") boolean includeAttributes) {
         return userEntityService.getUsersInfo(userIds, includeAttributes);
     }
-    
+
     @GET
     @Path("/user/details")
     @NoCache
@@ -47,7 +48,7 @@ public class UserController {
     public UserDetailsDTO getUserDetails(@QueryParam("userId") String userId) {
         return userDetailsService.getUserDetails(userId);
     }
-    
+
     @POST
     @Path("/user/details")
     @NoCache
@@ -56,7 +57,7 @@ public class UserController {
     public void saveUserDetails(UserDetailsRequestDTO userDetailsRequestDTO) {
         userDetailsService.saveUserDetails(userDetailsRequestDTO);
     }
-    
+
     @GET
     @Path("/user/signature")
     @NoCache

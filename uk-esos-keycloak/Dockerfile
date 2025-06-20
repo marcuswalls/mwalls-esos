@@ -8,7 +8,7 @@ RUN mkdir -p /mnt/rootfs
 RUN dnf install --installroot /mnt/rootfs curl dos2unix findutils --releasever 9 --setopt install_weak_deps=false --nodocs -y
 RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /bin/jq
 
-FROM quay.io/keycloak/keycloak:23.0.4
+FROM quay.io/keycloak/keycloak:26.2.5
 COPY --from=ubi-micro-build /mnt/rootfs /
 COPY --from=ubi-micro-build --chown=1000:0 /bin/jq /bin/jq
 

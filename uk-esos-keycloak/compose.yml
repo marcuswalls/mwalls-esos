@@ -1,0 +1,36 @@
+# Minimal Keycloak Docker Compose File
+services:
+  keycloak:
+    image: keycloak-esos:latest
+    environment:
+      - STARTUP_COMMAND=start-dev
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://keycloak-db:5432/${KC_POSTGRES_DB}
+      - KC_DB_USERNAME=${KC_POSTGRES_USER}
+      - KC_DB_PASSWORD=${KC_POSTGRES_PASSWORD}
+      - KC_HTTP_PORT=8080
+      - KEYCLOAK_ADMIN=${KC_BOOTSTRAP_ADMIN_USERNAME}
+      - KEYCLOAK_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      - BASE_URL=http://localhost:8080/auth
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    ports:
+      - 8080:8080
+
+  keycloak-db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=${KC_POSTGRES_DB}
+      - POSTGRES_USER=${KC_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${KC_POSTGRES_PASSWORD}
+    volumes:
+      - postgres_keycloak:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_keycloak:

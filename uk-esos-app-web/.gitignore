@@ -1,0 +1,9 @@
+.idea/
+.vscode/
+.claude/
+.angular/
+target/
+node/
+node_modules/
+dist/
+src/environments/version.ts

@@ -6,7 +6,7 @@ RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula sele
 RUN apt-get install -y --no-install-recommends fontconfig ttf-mscorefonts-installer
 COPY src/main/resources/symbol.ttf /usr/share/fonts
 RUN fc-cache -f -v
-COPY target/uk-esos-app-api-env_version.jar /opt/applications/uk-esos-app-api/
+COPY target/uk-esos-app-api-*.jar /opt/applications/uk-esos-app-api/uk-esos-app-api-env_version.jar
 RUN groupadd -g 499 esos && useradd -m -r -u 499 -g esos esos
 USER esos
 WORKDIR /opt/applications/uk-esos-app-api/

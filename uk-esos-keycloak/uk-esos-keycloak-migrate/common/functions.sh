@@ -18,8 +18,8 @@ getKeycloakAdminAccessToken(){
 	ACCESS_TOKEN=$(curl -s -L -X POST "$RETRIEVE_TOKEN_URL" \
 	-H 'Content-Type: application/x-www-form-urlencoded' \
 	--data-urlencode "client_id=$CLIENT_ID" \
-	--data-urlencode "username=$KEYCLOAK_ADMIN" \
-	--data-urlencode "password=$KEYCLOAK_ADMIN_PASSWORD" \
+	--data-urlencode "username=$KC_BOOTSTRAP_ADMIN_USERNAME" \
+	--data-urlencode "password=$KC_BOOTSTRAP_ADMIN_PASSWORD" \
 	--data-urlencode "grant_type=$GRANT_TYPE" \
 	| jq -r '.access_token')
 

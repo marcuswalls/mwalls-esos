@@ -79,6 +79,7 @@ services:
     image: keycloak-esos:latest
     environment:
       - STARTUP_COMMAND=start-dev
+      # - KC_LOG_LEVEL=DEBUG
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://keycloak-db:5432/${KC_POSTGRES_DB}
       - KC_DB_USERNAME=${KC_POSTGRES_USER}

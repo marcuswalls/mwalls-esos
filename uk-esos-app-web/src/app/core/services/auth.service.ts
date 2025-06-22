@@ -76,6 +76,6 @@ export class AuthService {
   }
 
   loadIsLoggedIn(): Observable<boolean> {
-    return from(this.keycloakService.isLoggedIn()).pipe(tap((isLoggedIn) => this.store.setIsLoggedIn(isLoggedIn)));
+    return of(this.keycloakService.isLoggedIn()).pipe(tap((isLoggedIn) => this.store.setIsLoggedIn(isLoggedIn)));
   }
 }

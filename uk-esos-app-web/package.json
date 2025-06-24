@@ -32,7 +32,6 @@
     "release:patch": "yarn version --patch --no-commit-hooks --no-git-tag-version && conventional-changelog -p angular -i CHANGELOG.md -s",
     "release:minor": "yarn version --minor --no-commit-hooks --no-git-tag-version && conventional-changelog -p angular -i CHANGELOG.md -s",
     "release:major": "yarn version --major --no-commit-hooks --no-git-tag-version && conventional-changelog -p angular -i CHANGELOG.md -s",
-    "prepare": "husky install",
     "sonar": "sonar-scanner",
     "sonar:local": "sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.login=admin -Dsonar.password=admin"
   },

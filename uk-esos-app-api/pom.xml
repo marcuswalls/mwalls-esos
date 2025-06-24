@@ -390,6 +390,7 @@
     </dependencies>
 
     <build>
+        <finalName>uk-esos-app-api</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -626,6 +627,9 @@
                 <version>${git.commit.id.plugin.version}</version>
                 <configuration>
                     <offline>true</offline>
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
                 </configuration>
             </plugin>
         </plugins>

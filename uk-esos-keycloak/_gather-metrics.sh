@@ -1,4 +1,4 @@
 #!/bin/bash
 
-mvn clean install
-mvn sonar:sonar
+./mvnw clean install
+./mvnw sonar:sonar

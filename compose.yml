@@ -70,13 +70,20 @@ services:
     ports:
       - 8080:8080
     depends_on:
+      maildev:
+        condition: service_healthy
       app-db:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
 
   # app-web:
   # keycloak:
   keycloak:
-    image: keycloak-esos:latest
+    build:
+      context: uk-esos-keycloak
+      dockerfile: Dockerfile
+    # image: keycloak-esos:latest
     environment:
       - STARTUP_COMMAND=start-dev
       # - KC_LOG_LEVEL=DEBUG
@@ -101,12 +108,19 @@ services:
       - MAIL_SSL=${API_MAIL_SMTPS_SSL_ENABLE}
       - MAIL_USER=${API_MAIL_USERNAME}
       - MAIL_PASSWORD=${API_MAIL_PASSWORD}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<> /dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; if [ $? -eq 0 ]; then echo 'Healthcheck Successful'; exit 0; else echo 'Healthcheck Failed'; exit 1; fi;",
+        ]
+      start_period: 5s
     depends_on:
       keycloak-db:
         condition: service_healthy
     ports:
       - 8091:8091
-      - 9000:9000
+      - 8999:9000
 
   app-db:
     image: postgres:latest
@@ -141,9 +155,42 @@ services:
       timeout: 5s
       retries: 5
 
-  # nginx:
+  nginx:
+    build:
+      context: uk-esos-nginx
+      dockerfile: Dockerfile
+    environment:
+      - FQDN=${NGINX_FQDN}
+      - COOKIES=${NGINX_COOKIES_URL}
+      - DASHBOARD=${NGINX_DASHBOARD_URL}
+      - KEYCLOAK=${KC_BASE_URL}
+      - APP_API=${API_APPLICATION_API_URL}
+      - APP_WEB=${API_APPLICATION_WEB_URL}
+
   # maintenance:
   # cookies:
+
+  # mail server
+  maildev:
+    container_name: maildev
+    image: maildev/maildev
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:1080",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 volumes:
   postgres_app:

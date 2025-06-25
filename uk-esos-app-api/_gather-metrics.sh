@@ -1,4 +1,4 @@
 #!/bin/bash
 
-mvn clean install -P instrument
-mvn sonar:sonar
+./mvnw clean install -P instrument
+./mvnw sonar:sonar

@@ -37,27 +37,29 @@ public class ApiSecurityConfig {
                 .and()
                 .csrf().disable()
                 .cors(Customizer.withDefaults())
-                .headers(httpSecurityHeadersConfigurer -> httpSecurityHeadersConfigurer.httpStrictTransportSecurity().includeSubDomains(true))
+                .headers(httpSecurityHeadersConfigurer -> httpSecurityHeadersConfigurer.httpStrictTransportSecurity()
+                        .includeSubDomains(true))
                 .authorizeHttpRequests(authorize -> authorize.requestMatchers(
-                                antMatcher("/v1.0/operator-users/registration/**"),
-                                antMatcher("/v1.0/regulator-users/registration/**"),
-                                antMatcher("/v1.0/verifier-users/registration/**"),
-                                antMatcher("/v1.0/users/security-setup/2fa/delete*"),
-                                antMatcher("/v1.0/users/forgot-password/**"),
-                                antMatcher("/v1.0/file-attachments/**"),
-                                antMatcher("/v1.0/file-document-templates/**"),
-                                antMatcher("/v1.0/file-documents/**"),
-                                antMatcher("/v1.0/file-notes/**"),
-                                antMatcher("/v1.0/user-signatures/**"),
-                                antMatcher("/v1.0/data/**"),
-                                antMatcher("/v3/api-docs/**"),
-                                antMatcher("/error"),
-                                antMatcher("/swagger-ui/**"),
-                                antMatcher("/swagger-resources/**"),
-                                antMatcher("/configuration/**"),
-                                antMatcher("/ui-configuration/**"),
-                                antMatcher("/webjars/**"),
-                                antMatcher("/actuator/**"))
+                        antMatcher("/v1.0/operator-users/registration/**"),
+                        antMatcher("/v1.0/regulator-users/registration/**"),
+                        antMatcher("/v1.0/verifier-users/registration/**"),
+                        antMatcher("/v1.0/users/security-setup/2fa/delete*"),
+                        antMatcher("/v1.0/users/forgot-password/**"),
+                        antMatcher("/v1.0/file-attachments/**"),
+                        antMatcher("/v1.0/file-document-templates/**"),
+                        antMatcher("/v1.0/file-documents/**"),
+                        antMatcher("/v1.0/file-notes/**"),
+                        antMatcher("/v1.0/user-signatures/**"),
+                        antMatcher("/v1.0/data/**"),
+                        antMatcher("/v3/api-docs/**"),
+                        antMatcher("/error"),
+                        antMatcher("/swagger-ui.html"),
+                        antMatcher("/swagger-ui/**"),
+                        antMatcher("/swagger-resources/**"),
+                        antMatcher("/configuration/**"),
+                        antMatcher("/ui-configuration/**"),
+                        antMatcher("/webjars/**"),
+                        antMatcher("/actuator/**"))
                         .permitAll())
                 .authorizeHttpRequests(authorize -> authorize.requestMatchers(antMatcher("/**"))
                         .authenticated())

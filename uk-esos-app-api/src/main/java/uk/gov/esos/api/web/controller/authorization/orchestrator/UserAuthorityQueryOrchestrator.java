@@ -48,9 +48,16 @@ public class UserAuthorityQueryOrchestrator {
         }
 
         // If user has no authorities at all
-        return userAuthService.getUserByUserId(userId).getStatus().equals(AuthenticationStatus.DELETED)
-                ? LoginStatus.DELETED
-                : LoginStatus.NO_AUTHORITY;
+        var appUser = userAuthService.getUserByUserId(userId);
+        AuthenticationStatus status = appUser.getStatus();
+        if (status == null) {
+            return LoginStatus.NO_AUTHORITY;
+        }
+        else {
+            return status.equals(AuthenticationStatus.DELETED)
+                    ? LoginStatus.DELETED
+                    : LoginStatus.NO_AUTHORITY;
+        }
     }
 
     private List<AuthorityDTO> getActiveUserAuthorities(List<AuthorityDTO> userAuthorities) {

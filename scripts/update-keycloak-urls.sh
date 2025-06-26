@@ -65,17 +65,13 @@ add_urls_to_array() {
     shift
     local new_urls=("$@")
     
-    # Convert current array to bash array
-    local existing_urls=($(echo "$current_array" | jq -r '.[]?'))
+    # Create a combined JSON array directly without bash array expansion
+    local combined_json=$(jq -n \
+        --argjson existing "$current_array" \
+        --argjson new "$(printf '%s\n' "${new_urls[@]}" | jq -R . | jq -s .)" \
+        '$existing + $new | unique | sort')
     
-    # Combine arrays and deduplicate
-    local all_urls=("${existing_urls[@]}" "${new_urls[@]}")
-    
-    # Create unique sorted array
-    local unique_urls=($(printf '%s\n' "${all_urls[@]}" | sort -u))
-    
-    # Convert back to JSON array
-    printf '%s\n' "${unique_urls[@]}" | jq -R . | jq -s .
+    echo "$combined_json"
 }
 
 # Update UK ESOS API client

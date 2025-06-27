@@ -2,33 +2,27 @@
 #############################################################################################################
 #   Update Keycloak client URLs, and CORS settings to make development easier.
 #############################################################################################################
-set -e
+
 # Load environment variables and common functions
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 source "$SCRIPT_DIR/load-env-vars.sh"
 source "$SCRIPT_DIR/common-functions.sh"
 
-# Check that required environment variables are set
-REQUIRED_ENV_VARS=(
-    "KC_BASE_URL" 
-    "API_KEYCLOAK_REALM"
-    "KC_BOOTSTRAP_ADMIN_USERNAME" 
-    "KC_BOOTSTRAP_ADMIN_PASSWORD" 
-)
-checkEnvironmentVariables $REQUIRED_ENV_VARS
+# Initialize logging
+LOG_NAMESPACE="${LOG_NAMESPACE:-keycloak}"
+init_log_counters "${LOG_NAMESPACE}"
 
-print_section "Updating Keycloak Client URLs and CORS settings"
-
-# Obtain an access token for Keycloak admin operations
-print_info "Getting Keycloak admin access token..."
-KEYCLOAK_ADMIN_ACCESS_TOKEN=$(getKeycloakAdminAccessToken)
-if [ -z "$KEYCLOAK_ADMIN_ACCESS_TOKEN" ]; then
-    print_fail "Failed to obtain Keycloak admin access token"
-    exit 1
-fi
-print_success "Successfully obtained admin token"
-echo ""
-
+# Function to check environment variables for URLs script
+check_urls_environment() {
+    # Check that required environment variables are set
+    REQUIRED_ENV_VARS=(
+        "KC_BASE_URL" 
+        "API_KEYCLOAK_REALM"
+        "KC_BOOTSTRAP_ADMIN_USERNAME" 
+        "KC_BOOTSTRAP_ADMIN_PASSWORD" 
+    )
+    checkEnvironmentVariables $REQUIRED_ENV_VARS
+}
 
 get_client_config() {
     local realm="$1"
@@ -85,21 +79,21 @@ update_uk_esos_api_client() {
     local client_config=$(get_client_config "$realm" "$client_id")
     
     if [ "$client_config" = "null" ] || [ -z "$client_config" ]; then
-        print_fail "Client '$client_id' not found in realm '$realm'"
+        print_error "Client '$client_id' not found in realm '$realm'" "${LOG_NAMESPACE}"
         return 1
     fi
     
     local client_uuid=$(echo "$client_config" | jq -r '.id')
     local client_name=$(echo "$client_config" | jq -r '.clientId')
     
-    print_info "Found client: $client_name (UUID: $client_uuid)"
+    print_note "Found client: $client_name (UUID: $client_uuid)"
     
     # Current URLs
     local current_redirect_uris=$(echo "$client_config" | jq '.redirectUris // []')
     local current_web_origins=$(echo "$client_config" | jq '.webOrigins // []')
     
-    print_info "Current redirect URIs: $(echo "$current_redirect_uris" | jq -c .)"
-    print_info "Current web origins: $(echo "$current_web_origins" | jq -c .)"
+    print_note "Current redirect URIs: $(echo "$current_redirect_uris" | jq -c .)"
+    print_note "Current web origins: $(echo "$current_web_origins" | jq -c .)"
     
     # Define new URLs to add
     local new_redirect_uris=(
@@ -120,8 +114,8 @@ update_uk_esos_api_client() {
     local updated_redirect_uris=$(add_urls_to_array "$current_redirect_uris" "${new_redirect_uris[@]}")
     local updated_web_origins=$(add_urls_to_array "$current_web_origins" "${new_web_origins[@]}")
     
-    print_info "Updated redirect URIs: $(echo "$updated_redirect_uris" | jq -c .)"
-    print_info "Updated web origins: $(echo "$updated_web_origins" | jq -c .)"
+    print_note "Updated redirect URIs: $(echo "$updated_redirect_uris" | jq -c .)"
+    print_note "Updated web origins: $(echo "$updated_web_origins" | jq -c .)"
     
     # Create updated client configuration
     local updated_config=$(echo "$client_config" | jq \
@@ -132,9 +126,9 @@ update_uk_esos_api_client() {
     # Update the client
     print_info "Updating client configuration..."
     if update_client_config "$realm" "$client_uuid" "$updated_config"; then
-        print_success "Successfully updated $client_id client"
+        print_success "Successfully updated $client_id client" "${LOG_NAMESPACE}"
     else
-        print_fail "Failed to update $client_id client"
+        print_error "Failed to update $client_id client" "${LOG_NAMESPACE}"
         return 1
     fi
     
@@ -152,21 +146,21 @@ update_camunda_identity_client() {
     local client_config=$(get_client_config "$realm" "$client_id")
     
     if [ "$client_config" = "null" ] || [ -z "$client_config" ]; then
-        print_fail "Client '$client_id' not found in realm '$realm'"
+        print_error "Client '$client_id' not found in realm '$realm'" "${LOG_NAMESPACE}"
         return 1
     fi
     
     local client_uuid=$(echo "$client_config" | jq -r '.id')
     local client_name=$(echo "$client_config" | jq -r '.clientId')
     
-    print_info "Found client: $client_name (UUID: $client_uuid)"
+    print_note "Found client: $client_name (UUID: $client_uuid)"
     
     # Current URLs
     local current_redirect_uris=$(echo "$client_config" | jq '.redirectUris // []')
     local current_web_origins=$(echo "$client_config" | jq '.webOrigins // []')
     
-    print_info "Current redirect URIs: $(echo "$current_redirect_uris" | jq -c .)"
-    print_info "Current web origins: $(echo "$current_web_origins" | jq -c .)"
+    print_note "Current redirect URIs: $(echo "$current_redirect_uris" | jq -c .)"
+    print_note "Current web origins: $(echo "$current_web_origins" | jq -c .)"
     
     # Define new URLs to add
     local new_redirect_uris=(
@@ -187,8 +181,8 @@ update_camunda_identity_client() {
     local updated_redirect_uris=$(add_urls_to_array "$current_redirect_uris" "${new_redirect_uris[@]}")
     local updated_web_origins=$(add_urls_to_array "$current_web_origins" "${new_web_origins[@]}")
     
-    print_info "Updated redirect URIs: $(echo "$updated_redirect_uris" | jq -c .)"
-    print_info "Updated web origins: $(echo "$updated_web_origins" | jq -c .)"
+    print_note "Updated redirect URIs: $(echo "$updated_redirect_uris" | jq -c .)"
+    print_note "Updated web origins: $(echo "$updated_web_origins" | jq -c .)"
     
     # Create updated client configuration
     local updated_config=$(echo "$client_config" | jq \
@@ -199,9 +193,9 @@ update_camunda_identity_client() {
     # Update the client
     print_info "Updating client configuration..."
     if update_client_config "$realm" "$client_uuid" "$updated_config"; then
-        print_success "Successfully updated $client_id client"
+        print_success "Successfully updated $client_id client" "${LOG_NAMESPACE}"
     else
-        print_fail "Failed to update $client_id client"
+        print_error "Failed to update $client_id client" "${LOG_NAMESPACE}"
         return 1
     fi
     
@@ -237,11 +231,27 @@ verify_updates() {
     echo ""
 }
 
-# Main function
-main() {
+# Main function for URL updates
+run_keycloak_urls_update() {
+    print_section "Updating Keycloak Client URLs and CORS settings"
+
+    # Obtain an access token for Keycloak admin operations
+    print_info "Getting Keycloak admin access token..."
+    KEYCLOAK_ADMIN_ACCESS_TOKEN=$(getKeycloakAdminAccessToken)
+    if [ -z "$KEYCLOAK_ADMIN_ACCESS_TOKEN" ]; then
+        print_error "Failed to obtain Keycloak admin access token" "${LOG_NAMESPACE}"
+        return 1
+    fi
+    print_success "Successfully obtained admin token" "${LOG_NAMESPACE}"
+    echo ""
+
     update_uk_esos_api_client
     update_camunda_identity_client
 }
 
-# Run main function with all arguments
-main "$@"
+# Only run main function if script is executed directly (not sourced)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    set -e
+    check_urls_environment
+    run_keycloak_urls_update "$@"
+fi

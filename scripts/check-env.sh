@@ -9,42 +9,12 @@
 # - Docker Desktop
 #############################################################################################################
 
+# Source the common functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/common-functions.sh"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Counters
-PASSED=0
-FAILED=0
-WARNINGS=0
-
-# Helper functions
-print_check() {
-    echo -e "${BLUE}🔍 Checking $1...${NC}"
-}
-
-print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
-    ((PASSED++))
-}
-
-print_fail() {
-    echo -e "${RED}❌ $1${NC}"
-    ((FAILED++))
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-    ((WARNINGS++))
-}
-
-print_info() {
-    echo -e "   ℹ️  $1"
-}
+# Initialize logging for environment check
+init_log_counters "env_check"
 
 # Version comparison function
 version_compare() {
@@ -71,7 +41,7 @@ version_compare() {
 
 # Check platform compatibility first
 check_platform() {
-    print_check "Platform compatibility"
+    print_section "Platform compatibility"
     
     # Detect the operating system
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -80,83 +50,81 @@ check_platform() {
             WSL_VERSION=""
             if grep -qi "WSL2" /proc/version 2>/dev/null; then
                 WSL_VERSION="WSL2"
-                print_info "Running on Windows $WSL_VERSION"
-                print_success "WSL2 environment detected - compatible"
+                print_note "Running on Windows $WSL_VERSION"
+                print_success "WSL2 environment detected - compatible" "env_check"
             else
                 WSL_VERSION="WSL1"
-                print_info "Running on Windows $WSL_VERSION"
-                print_warning "WSL1 detected - WSL2 is recommended for better Docker support"
+                print_note "Running on Windows $WSL_VERSION"
+                print_warning "WSL1 detected - WSL2 is recommended for better Docker support" "env_check"
             fi
         else
-            print_info "Running on native Linux"
-            print_success "Linux environment - compatible"
+            print_note "Running on native Linux"
+            print_success "Linux environment - compatible" "env_check"
         fi
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        print_info "Running on macOS"
-        print_success "macOS environment - compatible"
+        print_note "Running on macOS"
+        print_success "macOS environment - compatible" "env_check"
     elif [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]]; then
-        print_fail "Running on native Windows (Cygwin/MSYS/Win32)"
-        print_info "This environment is not supported for ESOS development"
-        print_info "Please use WSL2 instead: https://docs.microsoft.com/en-us/windows/wsl/install"
+        print_error "Running on native Windows (Cygwin/MSYS/Win32)" "env_check"
+        print_note "This environment is not supported for ESOS development"
+        print_note "Please use WSL2 instead: https://docs.microsoft.com/en-us/windows/wsl/install"
         echo ""
         echo "❌ Unsupported platform detected. Exiting."
         exit 1
     elif [[ -n "$WINDIR" ]] || [[ -n "$SYSTEMROOT" ]] || command -v cmd.exe >/dev/null 2>&1; then
-        print_fail "Windows environment detected outside of WSL"
-        print_info "Native Windows is not supported for ESOS development"
-        print_info "Please install and use WSL2: wsl --install"
+        print_error "Windows environment detected outside of WSL" "env_check"
+        print_note "Native Windows is not supported for ESOS development"
+        print_note "Please install and use WSL2: wsl --install"
         echo ""
         echo "❌ Please run this script from within WSL2. Exiting."
         exit 1
     else
-        print_warning "Unknown operating system: $OSTYPE"
-        print_info "Proceeding with checks, but compatibility is not guaranteed"
+        print_warning "Unknown operating system: $OSTYPE" "env_check"
+        print_note "Proceeding with checks, but compatibility is not guaranteed"
     fi
     echo ""
 }
 
-echo "🌍 ESOS Development Environment Check"
-echo "====================================="
-echo ""
+print_banner "ESOS Development Environment Check"
 
 # Platform check must be first
 check_platform
 
 # Check Node.js
-print_check "Node.js v18"
+print_section "Node.js v18"
 if command -v node >/dev/null 2>&1; then
     NODE_VERSION=$(node --version)
     NODE_VERSION_NUM=$(echo "$NODE_VERSION" | sed 's/v//')
-    print_info "Found: Node.js $NODE_VERSION"
+    print_note "Found: Node.js $NODE_VERSION"
     
     if version_compare "$NODE_VERSION_NUM" "18.0.0" ">="; then
         if [[ "$NODE_VERSION_NUM" == 18.* ]]; then
-            print_success "Node.js v18 is active"
+            print_success "Node.js v18 is active" "env_check"
         else
-            print_warning "Node.js $NODE_VERSION is active (expected v18.x)"
+            print_warning "Node.js $NODE_VERSION is active (expected v18.x)" "env_check"
         fi
     else
-        print_fail "Node.js version is too old (found $NODE_VERSION, need v18+)"
+        print_error "Node.js version is too old (found $NODE_VERSION, need v18+)" "env_check"
     fi
 else
-    print_fail "Node.js is not installed"
+    print_error "Node.js is not installed" "env_check"
 fi
 echo ""
 
 # Check Yarn
-print_check "Yarn package manager"
+print_section "Yarn package manager"
 if command -v yarn >/dev/null 2>&1; then
     YARN_VERSION=$(yarn --version 2>/dev/null)
-    print_info "Found: Yarn v$YARN_VERSION"
-    print_success "Yarn is installed"
+    print_note "Found: Yarn v$YARN_VERSION"
+    print_success "Yarn is installed" "env_check"
 else
-    print_fail "Yarn is not installed"
-    print_info "Install with: npm install -g yarn"
+    print_error "Yarn is not installed" "env_check"
+    print_note "Install with: npm install -g yarn"
 fi
 echo ""
 
 # Check Angular CLI
-print_check "Angular CLI v16"
+print_section "Angular CLI v16"
 if command -v ng >/dev/null 2>&1; then
     # Try multiple methods to get Angular CLI version
     NG_VERSION=""
@@ -177,128 +145,151 @@ if command -v ng >/dev/null 2>&1; then
     fi
     
     if [ -n "$NG_VERSION" ] && [ "$NG_VERSION" != "unknown" ]; then
-        print_info "Found: Angular CLI v$NG_VERSION"
+        print_note "Found: Angular CLI v$NG_VERSION"
         
         if [[ "$NG_VERSION" == 16.* ]]; then
-            print_success "Angular CLI v16 is installed"
+            print_success "Angular CLI v16 is installed" "env_check"
         else
-            print_warning "Angular CLI v$NG_VERSION is installed (expected v16.x)"
+            print_warning "Angular CLI v$NG_VERSION is installed (expected v16.x)" "env_check"
         fi
     else
-        print_warning "Could not determine Angular CLI version"
-        print_info "Try running: ng version"
+        print_warning "Could not determine Angular CLI version" "env_check"
+        print_note "Try running: ng version"
     fi
 else
-    print_fail "Angular CLI is not installed"
-    print_info "Install with: npm install -g @angular/cli@16"
+    print_error "Angular CLI is not installed" "env_check"
+    print_note "Install with: npm install -g @angular/cli@16"
 fi
 echo ""
 
 # Check Java 17
-print_check "Java 17"
+print_section "Java 17"
 if command -v java >/dev/null 2>&1; then
     JAVA_VERSION_FULL=$(java -version 2>&1 | head -n 1)
     JAVA_VERSION=$(echo "$JAVA_VERSION_FULL" | awk -F '"' '{print $2}' | awk -F '.' '{print $1}')
     
-    print_info "Found: $JAVA_VERSION_FULL"
+    print_note "Found: $JAVA_VERSION_FULL"
 
     if [ -n "$JAVA_HOME" ]; then
-        print_info "JAVA_HOME: $JAVA_HOME"
+        print_note "JAVA_HOME: $JAVA_HOME"
     else
-        print_warning "JAVA_HOME environment variable is not set"
+        print_warning "JAVA_HOME environment variable is not set" "env_check"
     fi
     
     if [ "$JAVA_VERSION" = "17" ]; then
-        print_success "Java 17 is active"
+        print_success "Java 17 is active" "env_check"
     else
-        print_fail "Java $JAVA_VERSION is active (expected Java 17)"
-        print_info "Check JAVA_HOME and PATH settings"
+        print_error "Java $JAVA_VERSION is active (expected Java 17)" "env_check"
+        print_note "Check JAVA_HOME and PATH settings"
     fi
     
 else
-    print_fail "Java is not installed"
+    print_error "Java is not installed" "env_check"
 fi
 echo ""
 
 # Check Maven
-print_check "Apache Maven with Java 17"
+print_section "Apache Maven with Java 17"
 if command -v mvn >/dev/null 2>&1; then
     MVN_OUTPUT=$(mvn --version 2>/dev/null)
     MVN_VERSION=$(echo "$MVN_OUTPUT" | head -n 1 | awk '{print $3}')
     MVN_JAVA_VERSION=$(echo "$MVN_OUTPUT" | grep "Java version" | awk '{print $3}' | awk -F '.' '{print $1}' | sed 's/,//')
     
-    print_info "Found: Apache Maven $MVN_VERSION"
+    print_note "Found: Apache Maven $MVN_VERSION"
     
     if [ -n "$MVN_JAVA_VERSION" ]; then
-        print_info "Maven is using Java $MVN_JAVA_VERSION"
+        print_note "Maven is using Java $MVN_JAVA_VERSION"
         
         if [ "$MVN_JAVA_VERSION" = "17" ]; then
-            print_success "Maven is configured with Java 17"
+            print_success "Maven is configured with Java 17" "env_check"
         else
-            print_fail "Maven is using Java $MVN_JAVA_VERSION (expected Java 17)"
-            print_info "Fix JAVA_HOME or update Maven's Java configuration"
+            print_error "Maven is using Java $MVN_JAVA_VERSION (expected Java 17)" "env_check"
+            print_note "Fix JAVA_HOME or update Maven's Java configuration"
         fi
     else
-        print_warning "Could not determine Java version used by Maven"
+        print_warning "Could not determine Java version used by Maven" "env_check"
     fi
     
     # Check if using project's wrapper
     if [ -f "./mvnw" ]; then
-        print_info "Maven wrapper (mvnw) is available in current directory"
+        print_note "Maven wrapper (mvnw) is available in current directory"
     fi
 else
-    print_fail "Maven is not installed"
+    print_error "Maven is not installed" "env_check"
 fi
 echo ""
 
 # Check Docker
-print_check "Docker"
+print_section "Docker"
 if command -v docker >/dev/null 2>&1; then
     DOCKER_VERSION=$(docker --version | awk '{print $3}' | sed 's/,//')
-    print_info "Found: Docker $DOCKER_VERSION"
+    print_note "Found: Docker $DOCKER_VERSION"
     
     # Check if Docker daemon is running
     if docker info >/dev/null 2>&1; then
-        print_success "Docker is installed and running"
+        print_success "Docker is installed and running" "env_check"
     else
-        print_warning "Docker is installed but daemon is not running"
+        print_warning "Docker is installed but daemon is not running" "env_check"
     fi
     
 else
-    print_fail "Docker is not installed"
+    print_error "Docker is not installed" "env_check"
+fi
+echo ""
+
+# Check PostgreSQL client (psql)
+print_section "PostgreSQL client (psql)"
+if command -v psql >/dev/null 2>&1; then
+    PSQL_VERSION=$(psql --version 2>/dev/null | awk '{print $3}')
+    print_note "Found: PostgreSQL client $PSQL_VERSION"
+    print_success "psql is installed" "env_check"
+else
+    print_error "psql is not installed" "env_check"
+    print_note "Install with: sudo apt install postgresql-client"
+fi
+echo ""
+
+# Check jq
+print_section "JSON processor (jq)"
+if command -v jq >/dev/null 2>&1; then
+    JQ_VERSION=$(jq --version 2>/dev/null | sed 's/jq-//')
+    print_note "Found: jq $JQ_VERSION"
+    print_success "jq is installed" "env_check"
+else
+    print_error "jq is not installed" "env_check"
+    print_note "Install with: sudo apt install jq"
+fi
+echo ""
+
+# Check curl
+print_section "curl"
+if command -v curl >/dev/null 2>&1; then
+    CURL_VERSION=$(curl --version 2>/dev/null | head -n 1 | awk '{print $2}')
+    print_note "Found: curl $CURL_VERSION"
+    print_success "curl is installed" "env_check"
+else
+    print_error "curl is not installed" "env_check"
+    print_note "Install with: sudo apt install curl"
 fi
 echo ""
 
 
-# Summary
-echo "📊 Environment Check Summary"
-echo "====================================="
-echo -e "${GREEN}✅ Passed: $PASSED${NC}"
-if [ $WARNINGS -gt 0 ]; then
-    echo -e "${YELLOW}⚠️  Warnings: $WARNINGS${NC}"
-fi
-if [ $FAILED -gt 0 ]; then
-    echo -e "${RED}❌ Failed: $FAILED${NC}"
-fi
-echo ""
+# Print summary using common functions
+print_log_summary "env_check" $LOG_LINEWIDTH
 
 # Overall status
-if [ $FAILED -eq 0 ]; then
-    if [ $WARNINGS -eq 0 ]; then
-        echo -e "${GREEN}🎉 Environment is ready for ESOS development!${NC}"
+errors=$(get_log_count "error" "env_check")
+warnings=$(get_log_count "warning" "env_check")
+
+if [ $errors -eq 0 ]; then
+    if [ $warnings -eq 0 ]; then
+        echo -e "${LOG_GREEN}🎉 Environment is ready for ESOS development!${LOG_NC}"
         exit 0
     else
-        echo -e "${YELLOW}⚠️  Environment is mostly ready, but please check warnings above.${NC}"
+        echo -e "${LOG_YELLOW}⚠️  Environment is mostly ready, but please check warnings above.${LOG_NC}"
         exit 0
     fi
 else
-    echo -e "${RED}❌ Environment setup is incomplete. Please fix the failed checks above.${NC}"
-    echo ""
-    echo "💡 Quick setup commands:"
-    echo "  sudo apt update && sudo apt install openjdk-17-jdk maven docker.io docker-compose"
-    echo "  curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && sudo apt-get install -y nodejs"
-    echo "  npm install -g yarn @angular/cli@16"
-    echo "  sudo usermod -aG docker \$USER"
-    echo ""
+    echo -e "${LOG_RED}❌ Environment setup is incomplete. Please fix the failed checks above.${LOG_NC}"
     exit 1
 fi

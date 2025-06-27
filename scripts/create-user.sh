@@ -43,14 +43,19 @@ source "$SCRIPT_DIR/common-functions.sh"
 # Check that required environment variables are set
 REQUIRED_ENV_VARS=(
     "KC_BASE_URL" 
-    "API_KEYCLOAK_REALM"
     "KC_BOOTSTRAP_ADMIN_USERNAME" 
     "KC_BOOTSTRAP_ADMIN_PASSWORD"
     "API_DB_NAME"
     "API_DB_USERNAME"
     "API_DB_PASSWORD"
+    "API_KEYCLOAK_REALM"
     "API_APPLICATION_API_URL"
     "ESOS_APP_API_CLIENT_SECRET"
+    "BOOTSTRAP_ADMIN_EMAIL"
+    "BOOTSTRAP_ADMIN_PASSWORD"
+    "BOOTSTRAP_ADMIN_FIRST_NAME"
+    "BOOTSTRAP_ADMIN_LAST_NAME"
+    "BOOTSTRAP_ADMIN_CA"
 )
 
 # Initialize logging
@@ -62,7 +67,7 @@ show_usage() {
     print_banner "🎯 ESOS User Creation Script"
     print_info "Create test users for development environments only"
     echo ""
-    echo "Usage: $0 TYPE ROLE COMPETENT_AUTHORITY EMAIL PASSWORD FIRST_NAME LAST_NAME JOB_TITLE PHONE_NUMBER"
+    echo "Usage: $0 TYPE ROLE COMPETENT_AUTHORITY EMAIL PASSWORD FIRST_NAME LAST_NAME JOB_TITLE PHONE_COUNTRY_CODE PHONE_NUMBER"
     echo ""
     print_section "Parameters"
     echo "  TYPE                  User type (OPERATOR, REGULATOR, VERIFIER)"
@@ -73,7 +78,8 @@ show_usage() {
     echo "  FIRST_NAME            User first name"
     echo "  LAST_NAME             User last name"
     echo "  JOB_TITLE             User job title"
-    echo "  PHONE_NUMBER          User phone number"
+    echo "  PHONE_COUNTRY_CODE    Phone country code (e.g., 44 for UK, 1 for US)"
+    echo "  PHONE_NUMBER          Phone number without country code"
     echo ""
     print_section "Valid Role Combinations"
     echo "  OPERATOR roles:       operator_admin, operator, consultant_agent, emitter_contact"
@@ -83,13 +89,13 @@ show_usage() {
     echo ""
     print_section "Examples"
     echo "  # Create operator admin"
-    echo "  $0 OPERATOR operator_admin ENGLAND john@company.com MyPass123! John Doe 'Operations Manager' '+44123456789'"
+    echo "  $0 OPERATOR operator_admin ENGLAND john@company.com MyPass123! John Doe 'Operations Manager' 44 1234567890"
     echo ""
     echo "  # Create regulator super user"
-    echo "  $0 REGULATOR ca_super_user ENGLAND admin@regulator.gov.uk SecurePass1! Jane Smith 'Super Admin' '+44987654321'"
+    echo "  $0 REGULATOR ca_super_user ENGLAND admin@regulator.gov.uk SecurePass1! Jane Smith 'Super Admin' 44 9876543210"
     echo ""
     echo "  # Create verifier admin"
-    echo "  $0 VERIFIER verifier_admin ENGLAND verifier@company.com VerifyPass1! Bob Wilson 'Verification Lead' '+44555666777'"
+    echo "  $0 VERIFIER verifier_admin ENGLAND verifier@company.com VerifyPass1! Bob Wilson 'Verification Lead' 44 5556667777"
 }
 
 validate_parameters() {
@@ -101,11 +107,13 @@ validate_parameters() {
     local first_name="$6"
     local last_name="$7"
     local job_title="$8"
-    local phone_number="$9"
+    local phone_country_code="$9"
+    local phone_number="${10}"
     
     # Check if all parameters are provided
     if [[ -z "$user_type" || -z "$role" || -z "$competent_authority" || -z "$email" || 
-          -z "$password" || -z "$first_name" || -z "$last_name" || -z "$job_title" || -z "$phone_number" ]]; then
+          -z "$password" || -z "$first_name" || -z "$last_name" || -z "$job_title" || 
+          -z "$phone_country_code" || -z "$phone_number" ]]; then
         print_error "All parameters are required" "${LOG_NAMESPACE}"
         show_usage
         exit 1
@@ -175,6 +183,18 @@ validate_parameters() {
         exit 1
     fi
     
+    # Validate phone country code (should be 1-4 digits)
+    if [[ ! "$phone_country_code" =~ ^[0-9]{1,4}$ ]]; then
+        print_error "Invalid phone country code: $phone_country_code (should be 1-4 digits)" "${LOG_NAMESPACE}"
+        exit 1
+    fi
+    
+    # Validate phone number (should be at least 6 digits)
+    if [[ ! "$phone_number" =~ ^[0-9]{6,}$ ]]; then
+        print_error "Invalid phone number: $phone_number (should be at least 6 digits, numbers only)" "${LOG_NAMESPACE}"
+        exit 1
+    fi
+    
     print_success "Parameter validation passed" "${LOG_NAMESPACE}"
 }
 
@@ -223,11 +243,11 @@ check_or_create_bootstrap_admin() {
     print_info "No bootstrap admin found. Creating one..."
     
     # Create bootstrap admin user
-    local bootstrap_email="${BOOTSTRAP_ADMIN_EMAIL:-bootstrap@esos.gov.uk}"
-    local bootstrap_first_name="${BOOTSTRAP_ADMIN_FIRST_NAME:-Bootstrap}"
-    local bootstrap_last_name="${BOOTSTRAP_ADMIN_LAST_NAME:-Admin}"
-    local bootstrap_password="${BOOTSTRAP_ADMIN_PASSWORD:-BootstrapPass123!}"
-    local bootstrap_ca="${BOOTSTRAP_ADMIN_CA:-ENGLAND}"
+    local bootstrap_email="${BOOTSTRAP_ADMIN_EMAIL}"
+    local bootstrap_first_name="${BOOTSTRAP_ADMIN_FIRST_NAME}"
+    local bootstrap_last_name="${BOOTSTRAP_ADMIN_LAST_NAME}"
+    local bootstrap_password="${BOOTSTRAP_ADMIN_PASSWORD}"
+    local bootstrap_ca="${BOOTSTRAP_ADMIN_CA}"
     
     print_info "Creating bootstrap admin: $bootstrap_email"
     
@@ -342,19 +362,20 @@ create_user_via_api() {
     local first_name="$6"
     local last_name="$7"
     local job_title="$8"
-    local phone_number="$9"
+    local phone_country_code="$9"
+    local phone_number="${10}"
     
     print_section "Creating User via API"
     
     # For OPERATOR users, we don't need an API token (public endpoint)
     if [[ "$user_type" == "OPERATOR" ]]; then
-        create_operator_user "$role" "$email" "$password" "$first_name" "$last_name" "$job_title" "$phone_number"
+        create_operator_user "$role" "$email" "$password" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
         return $?
     fi
     
     # For REGULATOR and VERIFIER users, we need an API token
-    local bootstrap_email="${BOOTSTRAP_ADMIN_EMAIL:-bootstrap@esos.gov.uk}"
-    local bootstrap_password="${BOOTSTRAP_ADMIN_PASSWORD:-BootstrapPass123!}"
+    local bootstrap_email="${BOOTSTRAP_ADMIN_EMAIL}"
+    local bootstrap_password="${BOOTSTRAP_ADMIN_PASSWORD}"
     
     local api_token=$(get_esos_api_token "$bootstrap_email" "$bootstrap_password")
     if [[ $? -ne 0 || -z "$api_token" ]]; then
@@ -364,10 +385,10 @@ create_user_via_api() {
     
     case "$user_type" in
         "REGULATOR")
-            create_regulator_user "$api_token" "$role" "$competent_authority" "$email" "$first_name" "$last_name" "$job_title" "$phone_number"
+            create_regulator_user "$api_token" "$role" "$competent_authority" "$email" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
             ;;
         "VERIFIER")
-            create_verifier_user "$api_token" "$role" "$email" "$first_name" "$last_name" "$job_title" "$phone_number"
+            create_verifier_user "$api_token" "$role" "$email" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
             ;;
         *)
             print_error "Unsupported user type for API creation: $user_type" "${LOG_NAMESPACE}"
@@ -384,24 +405,32 @@ create_regulator_user() {
     local first_name="$5"
     local last_name="$6"
     local job_title="$7"
-    local phone_number="$8"
+    local phone_country_code="$8"
+    local phone_number="$9"
     
     print_info "Creating regulator user via API..."
     
     # Create invitation request
-    local invitation_data=$(cat <<EOF
-{
-    "email": "$email",
-    "firstName": "$first_name",
-    "lastName": "$last_name",
-    "jobTitle": "$job_title",
-    "phoneNumber": "$phone_number",
-    "permissions": {
-        "PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK": "VIEW_ONLY"
-    }
-}
-EOF
-)
+    local invitation_data=$(jq -n \
+        --arg email "$email" \
+        --arg firstName "$first_name" \
+        --arg lastName "$last_name" \
+        --arg jobTitle "$job_title" \
+        --arg countryCode "$phone_country_code" \
+        --arg number "$phone_number" \
+        '{
+            "email": $email,
+            "firstName": $firstName,
+            "lastName": $lastName,
+            "jobTitle": $jobTitle,
+            "phoneNumber": {
+                "countryCode": $countryCode,
+                "number": $number
+            },
+            "permissions": {
+                "PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK": "VIEW_ONLY"
+            }
+        }')
     
     local response=$(curl -s -w "%{http_code}" -X POST \
         "$API_APPLICATION_API_URL/v1.0/regulator-users/invite" \
@@ -430,7 +459,8 @@ create_operator_user() {
     local first_name="$4"
     local last_name="$5"
     local job_title="$6"
-    local phone_number="$7"
+    local phone_country_code="$7"
+    local phone_number="$8"
     
     print_info "Creating operator user via automated registration..."
     
@@ -465,25 +495,6 @@ create_operator_user() {
     # Step 3: Complete the registration
     print_info "Completing user registration..."
     
-    # Parse phone number if provided
-    local phone_country_code="44"
-    local phone_number_only="1234567890"
-    
-    if [[ "$phone_number" =~ ^\+([0-9]{1,4})([0-9]{6,})$ ]]; then
-        # Format: +44123456789 -> country code: 44, number: 123456789
-        phone_country_code="${BASH_REMATCH[1]}"
-        phone_number_only="${BASH_REMATCH[2]}"
-    elif [[ "$phone_number" =~ ^([0-9]{10,})$ ]]; then
-        # Format: 1234567890 -> assume UK, use default country code
-        phone_number_only="$phone_number"
-    else
-        # Use provided number as-is for the number part, default country code
-        phone_number_only="${phone_number//[^0-9]/}"  # Remove non-digits
-        if [[ ${#phone_number_only} -lt 6 ]]; then
-            phone_number_only="1234567890"  # Fallback if too short
-        fi
-    fi
-    
     # Build registration payload using jq to properly escape JSON
     local registration_data=$(jq -n \
         --arg emailToken "$jwt_token" \
@@ -492,7 +503,7 @@ create_operator_user() {
         --arg jobTitle "$job_title" \
         --arg password "$password" \
         --arg countryCode "$phone_country_code" \
-        --arg number "$phone_number_only" \
+        --arg number "$phone_number" \
         '{
             "emailToken": $emailToken,
             "firstName": $firstName,
@@ -555,21 +566,29 @@ create_verifier_user() {
     local first_name="$4"
     local last_name="$5"
     local job_title="$6"
-    local phone_number="$7"
+    local phone_country_code="$7"
+    local phone_number="$8"
     
     print_info "Creating verifier user via API..."
     
     # Create invitation request  
-    local invitation_data=$(cat <<EOF
-{
-    "email": "$email",
-    "firstName": "$first_name",
-    "lastName": "$last_name",
-    "jobTitle": "$job_title",
-    "phoneNumber": "$phone_number"
-}
-EOF
-)
+    local invitation_data=$(jq -n \
+        --arg email "$email" \
+        --arg firstName "$first_name" \
+        --arg lastName "$last_name" \
+        --arg jobTitle "$job_title" \
+        --arg countryCode "$phone_country_code" \
+        --arg number "$phone_number" \
+        '{
+            "email": $email,
+            "firstName": $firstName,
+            "lastName": $lastName,
+            "jobTitle": $jobTitle,
+            "phoneNumber": {
+                "countryCode": $countryCode,
+                "number": $number
+            }
+        }')
     
     local response=$(curl -s -w "%{http_code}" -X POST \
         "$API_APPLICATION_API_URL/v1.0/verifier-users/invite" \
@@ -612,7 +631,8 @@ create_user_main() {
     local first_name="$6"
     local last_name="$7"
     local job_title="$8"
-    local phone_number="$9"
+    local phone_country_code="$9"
+    local phone_number="${10}"
     
     print_banner "Creating $user_type user with role $role"
     print_info "Email: $email"
@@ -623,7 +643,7 @@ create_user_main() {
     check_or_create_bootstrap_admin
     
     # Create user via appropriate API
-    create_user_via_api "$user_type" "$role" "$competent_authority" "$email" "$password" "$first_name" "$last_name" "$job_title" "$phone_number"
+    create_user_via_api "$user_type" "$role" "$competent_authority" "$email" "$password" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
     
     print_log_summary "${LOG_NAMESPACE}"
 }

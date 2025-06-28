@@ -297,12 +297,12 @@ check_or_create_bootstrap_admin() {
     
     # Create authority record in database
     local authority_sql="
-        INSERT INTO au_authority (user_id, code, status, competent_authority, creation_date, created_by)
-        VALUES ('$keycloak_user_id', 'ca_super_user', 'ACTIVE', '$bootstrap_ca', NOW(), 'SYSTEM')
+        INSERT INTO au_authority (id, user_id, code, status, competent_authority, creation_date, created_by)
+        VALUES (nextval('au_authority_seq'), '$keycloak_user_id', 'ca_super_user', 'ACTIVE', '$bootstrap_ca', NOW(), 'SYSTEM')
         RETURNING id;
     "
     
-    local authority_id=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c "$authority_sql" 2>/dev/null | xargs)
+    local authority_id=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -q -c "$authority_sql" 2>/dev/null | xargs)
     
     if [[ -z "$authority_id" || "$authority_id" == "" ]]; then
         print_error "Failed to create authority record" "${LOG_NAMESPACE}"
@@ -313,13 +313,14 @@ check_or_create_bootstrap_admin() {
     
     # Copy permissions from role template to authority
     local permissions_sql="
-        INSERT INTO au_authority_permission (authority_id, permission)
-        SELECT $authority_id, permission
-        FROM au_role_permission
-        WHERE role = 'ca_super_user';
+        INSERT INTO au_authority_permission (id, authority_id, permission)
+        SELECT nextval('au_authority_permission_seq'), $authority_id, arp.permission
+        FROM au_role_permission arp
+        JOIN au_role ar ON arp.role_id = ar.id
+        WHERE ar.code = 'ca_super_user';
     "
     
-    PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -c "$permissions_sql" >/dev/null 2>&1
+    PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -c "$permissions_sql"
     
     local permissions_count=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
         "SELECT COUNT(*) FROM au_authority_permission WHERE authority_id = $authority_id" 2>/dev/null | xargs)

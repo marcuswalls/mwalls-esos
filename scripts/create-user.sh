@@ -62,14 +62,25 @@ REQUIRED_ENV_VARS=(
 LOG_NAMESPACE="create-users"
 init_log_counters "${LOG_NAMESPACE}"
 
+# Global quiet mode flag
+QUIET_MODE=false
+
+# Quiet mode print functions
+quiet_print() {
+    if [[ "$QUIET_MODE" == "true" ]]; then
+        echo "$1"
+    fi
+}
+
 
 show_usage() {
     print_banner "🎯 ESOS User Creation Script"
     print_info "Create test users for development environments only"
     echo ""
-    echo "Usage: $0 TYPE ROLE COMPETENT_AUTHORITY EMAIL PASSWORD FIRST_NAME LAST_NAME JOB_TITLE PHONE_COUNTRY_CODE PHONE_NUMBER"
+    echo "Usage: $0 [--quiet] TYPE ROLE COMPETENT_AUTHORITY EMAIL PASSWORD FIRST_NAME LAST_NAME JOB_TITLE PHONE_COUNTRY_CODE PHONE_NUMBER"
     echo ""
     print_section "Parameters"
+    echo "  --quiet               Show minimal output (optional)"
     echo "  TYPE                  User type (OPERATOR, REGULATOR, VERIFIER)"
     echo "  ROLE                  User role (see below for valid combinations)"
     echo "  COMPETENT_AUTHORITY   Authority (ENGLAND, NORTHERN_IRELAND, SCOTLAND, WALES, OPRED)"
@@ -229,18 +240,26 @@ generate_registration_jwt() {
 }
 
 check_or_create_bootstrap_admin() {
-    print_section "Checking Bootstrap Admin"
+    if [[ "$QUIET_MODE" != "true" ]]; then
+        print_section "Checking Bootstrap Admin"
+    fi
     
     # Check if a super admin already exists in the database
     local existing_admin=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
         "SELECT COUNT(*) FROM au_authority WHERE code = 'ca_super_user' AND status = 'ACTIVE'" 2>/dev/null | xargs)
     
     if [[ "$existing_admin" -gt 0 ]]; then
-        print_success "Bootstrap admin already exists" "${LOG_NAMESPACE}"
+        if [[ "$QUIET_MODE" != "true" ]]; then
+            print_success "Bootstrap admin already exists" "${LOG_NAMESPACE}"
+        fi
         return 0
     fi
     
-    print_info "No bootstrap admin found. Creating one..."
+    if [[ "$QUIET_MODE" == "true" ]]; then
+        quiet_print "Creating user: Regulator - ${BOOTSTRAP_ADMIN_EMAIL}"
+    else
+        print_info "No bootstrap admin found. Creating one..."
+    fi
     
     # Create bootstrap admin user
     local bootstrap_email="${BOOTSTRAP_ADMIN_EMAIL}"
@@ -249,7 +268,9 @@ check_or_create_bootstrap_admin() {
     local bootstrap_password="${BOOTSTRAP_ADMIN_PASSWORD}"
     local bootstrap_ca="${BOOTSTRAP_ADMIN_CA}"
     
-    print_info "Creating bootstrap admin: $bootstrap_email"
+    if [[ "$QUIET_MODE" != "true" ]]; then
+        print_info "Creating bootstrap admin: $bootstrap_email"
+    fi
     
     # Get Keycloak admin token
     local admin_token=$(getKeycloakAdminAccessToken)
@@ -293,7 +314,9 @@ check_or_create_bootstrap_admin() {
         return 1
     fi
     
-    print_success "Created Keycloak user with ID: $keycloak_user_id" "${LOG_NAMESPACE}"
+    if [[ "$QUIET_MODE" != "true" ]]; then
+        print_success "Created Keycloak user with ID: $keycloak_user_id" "${LOG_NAMESPACE}"
+    fi
     
     # Create authority record in database
     local authority_sql="
@@ -309,7 +332,9 @@ check_or_create_bootstrap_admin() {
         return 1
     fi
     
-    print_success "Created authority record with ID: $authority_id" "${LOG_NAMESPACE}"
+    if [[ "$QUIET_MODE" != "true" ]]; then
+        print_success "Created authority record with ID: $authority_id" "${LOG_NAMESPACE}"
+    fi
     
     # Copy permissions from role template to authority
     local permissions_sql="
@@ -325,8 +350,10 @@ check_or_create_bootstrap_admin() {
     local permissions_count=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
         "SELECT COUNT(*) FROM au_authority_permission WHERE authority_id = $authority_id" 2>/dev/null | xargs)
     
-    print_success "Copied $permissions_count permissions to bootstrap admin" "${LOG_NAMESPACE}"
-    print_success "Bootstrap admin created successfully!" "${LOG_NAMESPACE}"
+    if [[ "$QUIET_MODE" != "true" ]]; then
+        print_success "Copied $permissions_count permissions to bootstrap admin" "${LOG_NAMESPACE}"
+        print_success "Bootstrap admin created successfully!" "${LOG_NAMESPACE}"
+    fi
     
     return 0
 }
@@ -612,6 +639,27 @@ create_verifier_user() {
 }
 
 create_user_main() {
+    # Parse --quiet flag
+    local quiet_mode=false
+    local args=()
+    
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --quiet)
+                quiet_mode=true
+                QUIET_MODE=true
+                shift
+                ;;
+            *)
+                args+=("$1")
+                shift
+                ;;
+        esac
+    done
+    
+    # Set the positional parameters to the remaining arguments
+    set -- "${args[@]}"
+    
     # Show usage if no parameters are provided
     if [[ $# -eq 0 ]]; then
         show_usage
@@ -635,10 +683,14 @@ create_user_main() {
     local phone_country_code="$9"
     local phone_number="${10}"
     
-    print_banner "Creating $user_type user with role $role"
-    print_info "Email: $email"
-    print_info "Name: $first_name $last_name"
-    print_info "Authority: $competent_authority"
+    if [[ "$QUIET_MODE" == "true" ]]; then
+        quiet_print "Creating user: $user_type - $email"
+    else
+        print_banner "Creating $user_type user with role $role"
+        print_info "Email: $email"
+        print_info "Name: $first_name $last_name"
+        print_info "Authority: $competent_authority"
+    fi
     
     # Check if bootstrap admin exists, create if needed
     check_or_create_bootstrap_admin
@@ -646,7 +698,9 @@ create_user_main() {
     # Create user via appropriate API
     create_user_via_api "$user_type" "$role" "$competent_authority" "$email" "$password" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
     
-    print_log_summary "${LOG_NAMESPACE}"
+    if [[ "$QUIET_MODE" != "true" ]]; then
+        print_log_summary "${LOG_NAMESPACE}"
+    fi
 }
 
 # Only run main function if script is executed directly (not sourced)

@@ -60,8 +60,8 @@ declare -A __COMMON_LOG_COLORS__=(
     [NONE]='\033[0m'
 )
 
-declare -A __COMMON_LOG_INDENT__=0
-declare -A __COMMON_LOG_LINE_WIDTH__=110
+declare __COMMON_LOG_INDENT__=0
+declare __COMMON_LOG_LINE_WIDTH__=110
 readonly __COMMON_LOG_LINE_WIDTH_DEFAULT__=110
 
 declare -A __COMMON_LOG_COUNTERS__;
@@ -88,7 +88,7 @@ push_indent() {
         return 1
     fi
     
-    __COMMON_LOG_INDENT__=$((__COMMON_LOG_INDENT__ + amount))
+    __COMMON_LOG_INDENT__=$((${__COMMON_LOG_INDENT__:-0} + amount))
 }
 
 # Decrease the indentation level for subsequent log messages
@@ -106,7 +106,7 @@ pop_indent() {
     fi
     
     if [[ ${__COMMON_LOG_INDENT__:-0} -ge ${amount} ]]; then
-        __COMMON_LOG_INDENT__=$((__COMMON_LOG_INDENT__ - amount))
+        __COMMON_LOG_INDENT__=$((${__COMMON_LOG_INDENT__:-0} - amount))
     else
         __COMMON_LOG_INDENT__=0
     fi
@@ -115,7 +115,7 @@ pop_indent() {
 # Get the current line width setting
 # Returns: Current line width value (default: 110)
 get_line_width() {
-    echo "${__COMMON_LOG_LINE_WIDTH__:-__COMMON_LOG_LINE_WIDTH_DEFAULT__}"
+    echo "${__COMMON_LOG_LINE_WIDTH__:-$__COMMON_LOG_LINE_WIDTH_DEFAULT__}"
 }   
 
 # Set the line width for banners, separators, and padding functions
@@ -127,7 +127,7 @@ set_line_width() {
     
     # If no parameter specified, use default
     if [[ $# -eq 0 || -z "${width}" ]]; then
-        __COMMON_LOG_LINE_WIDTH__="${__COMMON_LOG_LINE_WIDTH_DEFAULT__}"
+        __COMMON_LOG_LINE_WIDTH__="$__COMMON_LOG_LINE_WIDTH_DEFAULT__"
         return 0
     fi
     

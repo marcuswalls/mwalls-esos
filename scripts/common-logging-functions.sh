@@ -69,17 +69,42 @@ declare -A __COMMON_LOG_COUNTER_NAMESPACE__;
 readonly __COMMON_LOG_COUNTER_NAMESPACE_DEFAULT__="default";
 
 
+# Get the current indentation level
+# Returns: Current indent value (default: 0)
 get_indent() {
     echo "${__COMMON_LOG_INDENT__:-0}"
 }
 
+# Increase the indentation level for subsequent log messages
+# Parameters:
+#   $1 - amount: Number of spaces to increase indent (default: 2, must be positive integer)
+# Returns: 0 on success, 1 on validation error
 push_indent() {
     local amount="${1:-2}"
+    
+    # Validate that amount is a positive integer
+    if [[ ! "${amount}" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: push_indent amount must be a positive integer, got: '${amount}'" >&2
+        return 1
+    fi
+    
     __COMMON_LOG_INDENT__=$((__COMMON_LOG_INDENT__ + amount))
 }
 
+# Decrease the indentation level for subsequent log messages
+# Parameters:
+#   $1 - amount: Number of spaces to decrease indent (default: 2, must be positive integer)
+# Returns: 0 on success, 1 on validation error
+# Note: Prevents negative indentation by setting to 0 if amount > current indent
 pop_indent() {
     local amount="${1:-2}"
+    
+    # Validate that amount is a positive integer
+    if [[ ! "${amount}" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: pop_indent amount must be a positive integer, got: '${amount}'" >&2
+        return 1
+    fi
+    
     if [[ ${__COMMON_LOG_INDENT__:-0} -ge ${amount} ]]; then
         __COMMON_LOG_INDENT__=$((__COMMON_LOG_INDENT__ - amount))
     else
@@ -87,10 +112,16 @@ pop_indent() {
     fi
 }
 
+# Get the current line width setting
+# Returns: Current line width value (default: 110)
 get_line_width() {
     echo "${__COMMON_LOG_LINE_WIDTH__:-__COMMON_LOG_LINE_WIDTH_DEFAULT__}"
 }   
 
+# Set the line width for banners, separators, and padding functions
+# Parameters:
+#   $1 - width: Line width in characters (optional, defaults to 110 if not provided)
+# Returns: 0 on success, 1 on validation error
 set_line_width() {
     local width="${1}"
     
@@ -117,8 +148,11 @@ set_line_width() {
 }   
 
 
-# Initialize counters for a given namespace
-# Only initializes if the namespace hasn't been initialized before
+# Initialize counters for a given namespace and set it as the active namespace
+# Parameters:
+#   $1 - namespace: Counter namespace (optional, defaults to current namespace)
+# Returns: 0 (always succeeds)
+# Note: Only initializes if the namespace hasn't been initialized before
 init_log_counters() {
 
     # Only initialize if the namespace is not already set
@@ -133,7 +167,10 @@ init_log_counters() {
 }
 
 
-# Reset counters for a given namespace
+# Reset all counters for a given namespace to zero
+# Parameters:
+#   $1 - namespace: Counter namespace (optional, defaults to current namespace)
+# Returns: 0 (always succeeds)
 reset_log_counters() {
 
     local namespace="${1:-$(get_counter_namespace)}"
@@ -148,35 +185,85 @@ reset_log_counters() {
 }
 
 
+# Get the current active counter namespace
+# Returns: Current namespace (default: "default")
 get_counter_namespace() {
     local namespace="${COMMON_LOG_COUNTER_NAMESPACE:-${__COMMON_LOG_COUNTER_NAMESPACE_DEFAULT__}}"
     echo "${namespace}"
 }
 
 
+# Get the current value of a specific counter
+# Parameters:
+#   $1 - type: Counter type (required, must be SUCCESS, WARN, or ERROR)
+#   $2 - namespace: Counter namespace (optional, defaults to current namespace)
+# Returns: Counter value (0 if counter doesn't exist)
+# Exit codes: 0 on success, 1 on validation error
 get_counter() {
     local type="$1"
     local namespace="${2:-$(get_counter_namespace)}"
+    
+    # Validate that type is provided
+    if [[ -z "${type}" ]]; then
+        echo "ERROR: get_counter requires a type parameter" >&2
+        return 1
+    fi
+    
+    # Validate that type is valid (SUCCESS, WARN, ERROR)
+    case "${type}" in
+        "SUCCESS"|"WARN"|"ERROR")
+            ;;
+        *)
+            echo "ERROR: Invalid counter type '${type}'. Valid values are: SUCCESS, WARN, ERROR" >&2
+            return 1
+            ;;
+    esac
+    
     echo "${__COMMON_LOG_COUNTERS__["${namespace}_${type}"]:-0}"
 }
 
 
+# Increment a specific counter by 1
+# Parameters:
+#   $1 - type: Counter type (required, must be SUCCESS, WARN, or ERROR)
+#   $2 - namespace: Counter namespace (optional, defaults to current namespace)
+# Returns: 0 on success, 1 on validation error
 increment_counter() {
     local type="$1"
     local namespace="${2:-${COMMON_LOG_COUNTER_NAMESPACE:-${__COMMON_LOG_COUNTER_NAMESPACE_DEFAULT__}}}"
+    
+    # Validate that type is provided
+    if [[ -z "${type}" ]]; then
+        echo "ERROR: increment_counter requires a type parameter" >&2
+        return 1
+    fi
+    
+    # Validate that type is valid (SUCCESS, WARN, ERROR)
+    case "${type}" in
+        "SUCCESS"|"WARN"|"ERROR")
+            ;;
+        *)
+            echo "ERROR: Invalid counter type '${type}'. Valid values are: SUCCESS, WARN, ERROR" >&2
+            return 1
+            ;;
+    esac
+    
     local key="${namespace}_${type}"
     __COMMON_LOG_COUNTERS__["$key"]=$((${__COMMON_LOG_COUNTERS__["$key"]:-0} + 1))
 }
 
 
 
+# Low-level logging function with full control over formatting
+# Parameters:
+#   $1 - level_name: Log level (required, must be DEBUG, INFO, WARN, or ERROR)
+#   $2 - color_name: Text color (required, valid color names from __COMMON_LOG_COLORS__)
+#   $3 - icon_name: Icon to display (required, valid icon names from __COMMON_LOG_ICONS__ or custom text)
+#   $4 - indent_value: Number of spaces to indent (required, must be positive integer or 0)
+#   $5+ - message: Log message text (required, remaining parameters form the message)
+# Returns: 0 on success, 1 on validation error
+# Note: Outputs to stdout/stderr based on log level and respects COMMON_LOG_STD_LEVEL setting
 log_raw() {
-    # Validate that the function is called with at least 5 parameters
-    # $1 - log level (DEBUG, INFO, WARN, ERROR)
-    # $2 - color name (BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, NONE)
-    # $3 - icon name (SUCCESS, INFO, WARN, ERROR, NONE)
-    # $4 - number of spaces to indent
-    # $5 - message to log
 
     # Validate parameter count
     if [[ $# -lt 5 ]]; then
@@ -282,33 +369,58 @@ log_raw() {
 
 }
 
+# Log a debug message (cyan text, no icon, current indentation)
+# Parameters:
+#   $@ - message: All parameters form the debug message
 log_debug() {
     log_raw "DEBUG" "CYAN" "NONE" ${__COMMON_LOG_INDENT__} "$@";
 }
 
+# Log a plain note message (default color, no icon, current indentation)  
+# Parameters:
+#   $@ - message: All parameters form the note message
 log_note() {
     log_raw "INFO" "NONE" "NONE" ${__COMMON_LOG_INDENT__} "$@";
 }
 
+# Log an info message (blue text, info icon, current indentation)
+# Parameters:
+#   $@ - message: All parameters form the info message  
 log_info() {
     log_raw "INFO" "BLUE" "INFO" ${__COMMON_LOG_INDENT__} "$@";
 }
 
+# Log a success message (green text, success icon, current indentation)
+# Parameters:
+#   $@ - message: All parameters form the success message
+# Note: Automatically increments the SUCCESS counter
 log_success() {
     log_raw "INFO" "GREEN" "SUCCESS" ${__COMMON_LOG_INDENT__} "$@";
     increment_counter "SUCCESS"
 }
 
+# Log a warning message (yellow text, warning icon, current indentation)
+# Parameters:
+#   $@ - message: All parameters form the warning message
+# Note: Automatically increments the WARN counter
 log_warn() {
     log_raw "WARN" "YELLOW" "WARN" ${__COMMON_LOG_INDENT__} "$@";
     increment_counter "WARN"
 }
 
+# Log an error message (red text, error icon, current indentation)
+# Parameters:
+#   $@ - message: All parameters form the error message
+# Note: Automatically increments the ERROR counter
 log_error() {
     log_raw "ERROR" "RED" "ERROR" ${__COMMON_LOG_INDENT__} "$@";
     increment_counter "ERROR"
 }
 
+# Print a banner with the message surrounded by equal signs
+# Parameters:
+#   $@ - message: All parameters form the banner message
+# Output: Top separator, indented message, bottom separator
 print_banner() {
     local message="$@"
     print_separator "NONE" "=" "${__COMMON_LOG_LINE_WIDTH__}"
@@ -316,23 +428,66 @@ print_banner() {
     print_separator "NONE" "=" "${__COMMON_LOG_LINE_WIDTH__}"
 }
 
+# Print a section header with spanner icon and underline
+# Parameters:
+#   $@ - message: All parameters form the section header message
+# Output: Message with spanner icon, followed by dash separator
 print_section() {
     local message=$@;
     log_raw "INFO" "NONE" "🔧" ${__COMMON_LOG_INDENT__} "${message}";
     print_separator "NONE" "-" "${__COMMON_LOG_LINE_WIDTH__}";
 }
 
+# Print a separator line using repeated characters
+# Parameters:
+#   $1 - color: Text color (optional, defaults to NONE)
+#   $2 - char: Character to repeat (optional, defaults to "=")
+#   $3 - width: Width of separator (optional, defaults to current line width)
+# Returns: 0 on success, 1 on validation error
 print_separator() {
     local color="${1:-NONE}";
     local char="${2:-=}";
     local width="${3:-${__COMMON_LOG_LINE_WIDTH__}}";
+    
+    # Validate that width is a positive integer
+    if [[ ! "${width}" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: print_separator width must be a positive integer, got: '${width}'" >&2
+        return 1
+    fi
+    
+    # Ensure width is not zero
+    if [[ "${width}" -eq 0 ]]; then
+        echo "ERROR: print_separator width must be greater than zero" >&2
+        return 1
+    fi
+    
     log_raw "INFO" ${color} "NONE" ${__COMMON_LOG_INDENT__} "$(printf -- '%*s' "${width}" "" | tr ' ' "${char}")";
 }
 
+# Pad a string to a specified width with right-side padding
+# Parameters:
+#   $1 - string: String to pad (required)
+#   $2 - width: Total width after padding (optional, defaults to current line width)
+#   $3 - pad_char: Character to use for padding (optional, defaults to space)
+# Returns: 0 on success, 1 on validation error
+# Output: Padded string to stdout
 pad_right() {
     local string="$1"
     local width="${2:-${__COMMON_LOG_LINE_WIDTH__}}"
     local pad_char="${3:- }"
+    
+    # Validate that width is a positive integer
+    if [[ ! "${width}" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: pad_right width must be a positive integer, got: '${width}'" >&2
+        return 1
+    fi
+    
+    # Ensure width is not zero
+    if [[ "${width}" -eq 0 ]]; then
+        echo "ERROR: pad_right width must be greater than zero" >&2
+        return 1
+    fi
+    
     local string_len=${#string}
     
     if [[ $string_len -ge $width ]]; then
@@ -345,6 +500,10 @@ pad_right() {
 }
 
 
+# Print a summary of all counters with formatted output
+# Parameters:
+#   $1 - linewidth: Width of the summary box (optional, defaults to current line width)
+# Output: Formatted summary box showing SUCCESS, WARN, and ERROR counts
 print_count_summary() {
 
     local linewidth="${1:-${__COMMON_LOG_LINE_WIDTH__}}"
@@ -361,4 +520,27 @@ print_count_summary() {
     log_raw "INFO" "NONE" "NONE" ${__COMMON_LOG_INDENT__} "$(pad_right "" "$linewidth" "=")";
 }
 
+# Export all public functions for use in other scripts
+export -f log_raw
+export -f log_debug
+export -f log_note
+export -f log_info
+export -f log_success
+export -f log_warn
+export -f log_error
+export -f print_banner
+export -f print_section
+export -f print_separator
+export -f print_count_summary
+export -f get_indent
+export -f push_indent
+export -f pop_indent
+export -f pad_right
+export -f set_line_width
+export -f get_line_width
+export -f init_log_counters
+export -f reset_log_counters
+export -f increment_counter
+export -f get_counter
+export -f get_counter_namespace
 

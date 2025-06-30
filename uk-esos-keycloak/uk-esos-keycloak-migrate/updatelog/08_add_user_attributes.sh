@@ -18,9 +18,9 @@ CURRENT_REALM_CONFIG=$(curl -s -L -X GET "$UPDATE_REALM_URL" \
 -H "Authorization: Bearer $KEYCLOAK_ADMIN_ACCESS_TOKEN")
 
 #Check if unmanaged attributes are already enabled
-CURRENT_POLICY=$(echo "$CURRENT_REALM_CONFIG" | jq -r '.unmanagedAttributePolicy // "DISABLED"')
+CURRENT_POLICY=$(echo "$CURRENT_REALM_CONFIG" | jq -r '.attributes."_userAttributes.unmanaged" // "false"')
 
-if [ "$CURRENT_POLICY" = "ENABLED" ]; then
+if [ "$CURRENT_POLICY" = "true" ]; then
 	echo " Unmanaged attributes already enabled for realm $UK_ESOS_REALM_NAME"
 else
 	echo " Enabling unmanaged attributes for realm $UK_ESOS_REALM_NAME"
@@ -29,7 +29,7 @@ else
 	UPDATE_REALM_RESPONSE=$(curl -s -L -X PUT "$UPDATE_REALM_URL" \
 	-H 'Content-Type: application/json' \
 	-H "Authorization: Bearer $KEYCLOAK_ADMIN_ACCESS_TOKEN" \
-	--data-raw "$(echo "$CURRENT_REALM_CONFIG" | jq '.unmanagedAttributePolicy = "ENABLED"')")
+	--data-raw "$(echo "$CURRENT_REALM_CONFIG" | jq '.attributes."_userAttributes.unmanaged" = "true"')")
 	
 	if [ -z "$UPDATE_REALM_RESPONSE" ]; then
 		echo " Unmanaged attributes enabled successfully for realm $UK_ESOS_REALM_NAME"

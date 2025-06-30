@@ -57,6 +57,7 @@ updatelogScripts=(
 "05_add_realm_admin_role_to_esos_api_service_user.sh"
 "06_add_roles_to_camunda_identity_service_service_user.sh"
 "07_update_uk_esos_realm.sh"
+"08_add_user_attributes.sh"
 )
 
 #Get already executed scripts as concatenated string

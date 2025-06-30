@@ -44,6 +44,7 @@ declare -A __COMMON_LOG_ICONS__=(
     [SPANNER]='🔧'
     [HOURGLASS]='⏳'
     [GLOBE]='🌍'
+    [PADLOCK]='🔒'
     [INFO]='ℹ️'
     [WARN]='⚠️'
     [ERROR]='❌'

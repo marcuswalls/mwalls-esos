@@ -37,8 +37,8 @@
 
 # Load environment variables and common functions
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-source "$SCRIPT_DIR/load-env-vars.sh"
 source "$SCRIPT_DIR/common-functions.sh"
+load_environment_variables
 
 # Check that required environment variables are set
 REQUIRED_ENV_VARS=(
@@ -50,6 +50,7 @@ REQUIRED_ENV_VARS=(
     "API_DB_PASSWORD"
     "API_KEYCLOAK_REALM"
     "API_APPLICATION_API_URL"
+    "ESOS_APP_API_CLIENT_ID"
     "ESOS_APP_API_CLIENT_SECRET"
     "BOOTSTRAP_ADMIN_EMAIL"
     "BOOTSTRAP_ADMIN_PASSWORD"
@@ -202,7 +203,8 @@ validate_parameters() {
 # Function to generate base64url encoding (JWT compliant)
 base64url_encode() {
     local input="$1"
-    echo -n "$input" | base64 -w 0 | tr -d '=' | tr '/+' '_-'
+    # Use base64 with no padding and URL-safe characters
+    echo -n "$input" | base64 -w 0 | tr '/+' '_-' | tr -d '='
 }
 
 # Function to generate JWT token for user registration
@@ -217,7 +219,7 @@ generate_registration_jwt() {
     
     # JWT payload - must match exact format expected by Java application
     # Issuer should be just the Keycloak auth server URL, not the realm URL
-    local auth_server_url="${API_KEYCLOAK_SERVERURL:-$KC_BASE_URL}"
+    local auth_server_url="$API_KEYCLOAK_SERVERURL"
     local payload="{\"iss\":\"$auth_server_url\",\"iat\":$current_time,\"sub\":\"user_registration\",\"user_email\":\"$email\",\"aud\":\"uk-esos-web-app\",\"exp\":$expiry_time}"
     local payload_b64=$(base64url_encode "$payload")
     
@@ -227,6 +229,49 @@ generate_registration_jwt() {
     
     # Complete JWT token
     echo "${unsigned_token}.${signature}"
+}
+
+# Function to generate JWT token for regulator invitation acceptance
+generate_regulator_invitation_jwt() {
+    local -n jwt_ref=$1
+    local authority_uuid="$2"
+    local current_time=$(date +%s)
+    local expiry_time=$((current_time + 259200))  # 3 days
+    
+    # JWT header - must match exact format from real token
+    local header='{"typ":"JWT","alg":"HS256"}'
+    local header_b64=$(base64url_encode "$header")
+    
+    # JWT payload for regulator invitation - must match exact format from real token
+    local auth_server_url="$API_KEYCLOAK_SERVERURL"
+    # Use jq to properly construct JSON and avoid quote escaping issues
+    local payload=$(jq -n \
+        --arg sub "regulator_invitation" \
+        --arg aud "uk-esos-web-app" \
+        --arg iss "$auth_server_url" \
+        --arg authority_uuid "$authority_uuid" \
+        --argjson exp "$expiry_time" \
+        --argjson iat "$current_time" \
+        --argjson nbf "$current_time" \
+        '{sub: $sub, aud: $aud, iss: $iss, authority_uuid: $authority_uuid, exp: $exp, iat: $iat, nbf: $nbf}')
+    local payload_b64=$(base64url_encode "$payload")
+    
+    log_debug "JWT generation debug:"
+    log_debug "  Header: $header"
+    log_debug "  Header B64: $header_b64"
+    log_debug "  Payload: $payload"
+    log_debug "  Payload B64: $payload_b64"
+    log_debug "  Auth server URL: $auth_server_url"
+    log_debug "  Secret (first 10 chars): ${ESOS_APP_API_CLIENT_SECRET:0:10}..."
+    
+    # Create signature - use exact same method as working operator JWT
+    local unsigned_token="${header_b64}.${payload_b64}"
+    local signature=$(echo -n "$unsigned_token" | openssl dgst -sha256 -hmac "$ESOS_APP_API_CLIENT_SECRET" -binary | base64 -w 0 | tr -d '=' | tr '/+' '_-')
+    
+    log_debug "  Unsigned token: $unsigned_token"
+    log_debug "  Signature: $signature"
+    
+    jwt_ref="${unsigned_token}.${signature}"
 }
 
 check_or_create_bootstrap_admin() {
@@ -329,30 +374,51 @@ check_or_create_bootstrap_admin() {
     log_debug "Copied $permissions_count permissions to bootstrap admin"
     log_success "Bootstrap admin created successfully!"
     
+    # Give Keycloak a moment to make the user available for authentication
+    log_debug "Waiting 2 seconds for Keycloak user to be available..."
+    sleep 2
+    
     return 0
 }
 
 get_esos_api_token() {
-    local email="$1"
-    local password="$2"
+    local -n token_ref=$1
+    local email="$2"
+    local password="$3"
+    
+    log_debug "Attempting to get API token for user: $email"
+    log_debug "Using realm: $API_KEYCLOAK_REALM"
+    log_debug "Using KC_BASE_URL: $KC_BASE_URL"
+    log_debug "Using client_id: $ESOS_APP_API_CLIENT_ID"
     
     # First, get token from Keycloak using user credentials
     local token_response=$(curl -s -X POST \
         "$KC_BASE_URL/realms/$API_KEYCLOAK_REALM/protocol/openid-connect/token" \
         -H "Content-Type: application/x-www-form-urlencoded" \
-        -d "client_id=esos-web-app" \
+        -d "client_id=${ESOS_APP_API_CLIENT_ID}" \
         -d "grant_type=password" \
         -d "username=$email" \
         -d "password=$password")
+    
+    log_debug "Token response: $token_response"
     
     local access_token=$(echo "$token_response" | jq -r '.access_token // empty')
     
     if [[ -z "$access_token" || "$access_token" == "null" ]]; then
         log_error "Failed to get API access token for user: $email"
+        log_error "Token response was: $token_response"
+        
+        # Check if it's an invalid_client error
+        if echo "$token_response" | grep -q "invalid_client"; then
+            log_error "Keycloak client 'esos-web-app' is not properly configured"
+            log_error "Please ensure the client exists and supports password grant type"
+        fi
+        
         return 1
     fi
     
-    echo "$access_token"
+    log_debug "Successfully obtained API token"
+    token_ref="$access_token"
 }
 
 create_user_via_api() {
@@ -379,15 +445,15 @@ create_user_via_api() {
     local bootstrap_email="${BOOTSTRAP_ADMIN_EMAIL}"
     local bootstrap_password="${BOOTSTRAP_ADMIN_PASSWORD}"
     
-    local api_token=$(get_esos_api_token "$bootstrap_email" "$bootstrap_password")
-    if [[ $? -ne 0 || -z "$api_token" ]]; then
+    local api_token
+    if ! get_esos_api_token api_token "$bootstrap_email" "$bootstrap_password"; then
         log_error "Failed to get API token"
         return 1
     fi
     
     case "$user_type" in
         "REGULATOR")
-            create_regulator_user "$api_token" "$role" "$competent_authority" "$email" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
+            create_regulator_user "$api_token" "$role" "$competent_authority" "$email" "$password" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
             ;;
         "VERIFIER")
             create_verifier_user "$api_token" "$role" "$email" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
@@ -404,49 +470,178 @@ create_regulator_user() {
     local role="$2"
     local competent_authority="$3"
     local email="$4"
-    local first_name="$5"
-    local last_name="$6"
-    local job_title="$7"
-    local phone_country_code="$8"
-    local phone_number="$9"
+    local password="$5"
+    local first_name="$6"
+    local last_name="$7"
+    local job_title="$8"
+    local phone_country_code="$9"
+    local phone_number="${10}"
     
     log_note "Creating regulator user via API..."
+    # log_debug "Using API URL: $API_APPLICATION_API_URL"
     
-    # Create invitation request
+    if [[ -z "$API_APPLICATION_API_URL" ]]; then
+        log_error "API_APPLICATION_API_URL environment variable is not set"
+        return 1
+    fi
+    
+    # Create invitation request JSON
     local invitation_data=$(jq -n \
         --arg email "$email" \
         --arg firstName "$first_name" \
         --arg lastName "$last_name" \
         --arg jobTitle "$job_title" \
-        --arg countryCode "$phone_country_code" \
-        --arg number "$phone_number" \
+        --arg phoneNumber "$phone_country_code$phone_number" \
         '{
             "email": $email,
             "firstName": $firstName,
             "lastName": $lastName,
             "jobTitle": $jobTitle,
-            "phoneNumber": {
-                "countryCode": $countryCode,
-                "number": $number
-            },
+            "phoneNumber": $phoneNumber,
+            "mobileNumber": "",
             "permissions": {
-                "PERM_ORGANISATION_ACCOUNT_OPENING_APPLICATION_REVIEW_VIEW_TASK": "VIEW_ONLY"
+                "MANAGE_USERS_AND_CONTACTS": "NONE",
+                "ASSIGN_REASSIGN_TASKS": "NONE",
+                "REVIEW_ORGANISATION_ACCOUNT": "VIEW_ONLY"
             }
         }')
+    
+    # log_debug "Request URL: $API_APPLICATION_API_URL/v1.0/regulator-users/invite"
+    # log_debug "Request JSON: $invitation_data"
+    
+    # Create temporary file for JSON data
+    local temp_file=$(mktemp)
+    echo "$invitation_data" > "$temp_file"
+    
+    # Debug: check if temp file is corrupted when DEBUG logging enabled
+    if [[ "$COMMON_LOG_STD_LEVEL" == "DEBUG" ]]; then
+        log_debug "Temp file contents:"
+        log_debug "$(cat "$temp_file")"
+        log_debug "End of temp file"
+        
+        # Additional debugging to verify the HTTP request
+        log_debug "About to make curl request with:"
+        log_debug "  URL: $API_APPLICATION_API_URL/v1.0/regulator-users/invite"
+        log_debug "  Token (first 20 chars): ${api_token:0:20}..."
+        log_debug "  Temp file size: $(wc -c < "$temp_file") bytes"
+    fi
     
     local response=$(curl -s -w "%{http_code}" -X POST \
         "$API_APPLICATION_API_URL/v1.0/regulator-users/invite" \
         -H "Authorization: Bearer $api_token" \
-        -H "Content-Type: application/json" \
-        -d "$invitation_data")
+        -F "regulatorInvitedUser=@$temp_file;type=application/json")
+    
+    # Clean up temporary file
+    rm -f "$temp_file"
     
     local http_code="${response: -3}"
     local response_body="${response%???}"
     
     if [[ "$http_code" == "200" || "$http_code" == "204" ]]; then
         log_success "Regulator invitation sent successfully"
-        log_note "User must check email and accept invitation to complete registration"
-        return 0
+        
+        # Automatically accept the invitation using JWT token
+        log_note "Automatically accepting invitation..."
+        
+        # Get the invitation token (authority UUID) from database
+        log_note "Looking up invitation token from database..."
+        sleep 2  # Wait for authority record to be created
+        
+        # First get Keycloak user ID via API
+        local admin_token=$(get_keycloak_admin_access_token)
+        if [[ "$admin_token" == "null" || -z "$admin_token" ]]; then
+            log_error "Failed to get Keycloak admin token"
+            log_note "User must manually accept invitation via email"
+            return 0
+        fi
+        
+        local keycloak_user_id=$(curl -s -X GET \
+            "$KC_BASE_URL/admin/realms/$API_KEYCLOAK_REALM/users?email=$email" \
+            -H "Authorization: Bearer $admin_token" | jq -r '.[0].id // empty')
+        
+        if [[ -z "$keycloak_user_id" || "$keycloak_user_id" == "null" ]]; then
+            log_error "Could not find Keycloak user ID for email: $email"
+            log_note "User must manually accept invitation via email"
+            return 0
+        fi
+        
+        log_note "Found Keycloak user ID: $keycloak_user_id"
+        
+        # Now get the authority UUID using the Keycloak user ID
+        local invitation_token=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
+            "SELECT uuid FROM au_authority WHERE user_id = '$keycloak_user_id' AND status = 'PENDING' ORDER BY creation_date DESC LIMIT 1;" 2>/dev/null | xargs)
+        
+        if [[ -z "$invitation_token" || "$invitation_token" == "" ]]; then
+            log_error "Could not find invitation token for user ID: $keycloak_user_id"
+            log_note "User must manually accept invitation via email"
+            return 0
+        fi
+        
+        log_note "Found authority UUID: $invitation_token"
+        
+        # Create JWT token with the authority UUID (API requires JWT format)
+        log_debug "Generating JWT token with authority UUID: $invitation_token"
+        local jwt_token
+        if ! generate_regulator_invitation_jwt jwt_token "$invitation_token"; then
+            log_error "Failed to generate JWT token"
+            log_note "User must manually accept invitation via email"
+            return 0
+        fi
+        
+        log_note "Generated JWT token: ${jwt_token:0:50}...${jwt_token: -20}"
+        
+        # Step 1: Accept invitation using the JWT token
+        log_debug "Accepting invitation with JWT token..."
+        local accept_response=$(curl -s -w "%{http_code}" -X POST \
+            "$API_APPLICATION_API_URL/v1.0/regulator-users/registration/accept-invitation" \
+            -H "Content-Type: application/json" \
+            -d "{\"token\": \"$jwt_token\"}")
+        
+        local accept_http_code="${accept_response: -3}"
+        local accept_response_body="${accept_response%???}"
+        
+        if [[ "$accept_http_code" != "200" ]]; then
+            log_error "Failed to accept invitation. HTTP code: $accept_http_code"
+            log_note "Response: $accept_response_body"
+            log_note "User must manually accept invitation via email"
+            return 0  # Don't fail completely, invitation was sent
+        fi
+        
+        log_debug "Invitation accepted successfully"
+        
+        # Step 2: Enable user with password
+        log_note "Enabling user account with credentials..."
+        local enable_data=$(jq -n \
+            --arg invitationToken "$jwt_token" \
+            --arg password "$password" \
+            '{
+                "invitationToken": $invitationToken,
+                "password": $password
+            }')
+        
+        local enable_response=$(curl -s -w "%{http_code}" -X PUT \
+            "$API_APPLICATION_API_URL/v1.0/regulator-users/registration/enable-from-invitation" \
+            -H "Content-Type: application/json" \
+            -d "$enable_data")
+        
+        local enable_http_code="${enable_response: -3}"
+        local enable_response_body="${enable_response%???}"
+        
+        if [[ "$enable_http_code" == "204" ]]; then
+            log_success "Regulator user registration completed successfully!"
+            log_note "User details:"
+            log_note "  Email: $email"
+            log_note "  Name: $first_name $last_name"
+            log_note "  Status: ACTIVE"
+            log_note ""
+            log_note "User can now login with: $email / $password"
+            return 0
+        else
+            log_error "Failed to enable user account. HTTP code: $enable_http_code"
+            log_note "Response: $enable_response_body"
+            log_note "User must manually complete registration via email"
+            return 0  # Don't fail completely, invitation was sent
+        fi
     else
         log_error "Failed to send regulator invitation. HTTP code: $http_code"
         log_note "Response: $response_body"
@@ -572,25 +767,31 @@ create_verifier_user() {
     local phone_number="$8"
     
     log_note "Creating verifier user via API..."
+    log_debug "Using API URL: $API_APPLICATION_API_URL"
     
-    # Create invitation request  
+    if [[ -z "$API_APPLICATION_API_URL" ]]; then
+        log_error "API_APPLICATION_API_URL environment variable is not set"
+        return 1
+    fi
+    
+    # Create invitation request JSON - verifier API expects different structure
     local invitation_data=$(jq -n \
         --arg email "$email" \
         --arg firstName "$first_name" \
         --arg lastName "$last_name" \
-        --arg jobTitle "$job_title" \
-        --arg countryCode "$phone_country_code" \
-        --arg number "$phone_number" \
+        --arg roleCode "$role" \
+        --arg phoneNumber "$phone_country_code$phone_number" \
         '{
             "email": $email,
             "firstName": $firstName,
             "lastName": $lastName,
-            "jobTitle": $jobTitle,
-            "phoneNumber": {
-                "countryCode": $countryCode,
-                "number": $number
-            }
+            "roleCode": $roleCode,
+            "phoneNumber": $phoneNumber,
+            "mobileNumber": ""
         }')
+    
+    log_debug "Request URL: $API_APPLICATION_API_URL/v1.0/verifier-users/invite"
+    log_debug "Request JSON: $invitation_data"
     
     local response=$(curl -s -w "%{http_code}" -X POST \
         "$API_APPLICATION_API_URL/v1.0/verifier-users/invite" \

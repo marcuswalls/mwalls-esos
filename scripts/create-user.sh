@@ -62,70 +62,60 @@ REQUIRED_ENV_VARS=(
 LOG_NAMESPACE="create-users"
 init_log_counters "${LOG_NAMESPACE}"
 
-# Global quiet mode flag
-QUIET_MODE=false
-
-# Quiet mode print functions
-quiet_print() {
-    if [[ "$QUIET_MODE" == "true" ]]; then
-        echo "$1"
-    fi
-}
 
 
 show_usage() {
-    print_banner "🎯 ESOS User Creation Script"
-    print_info "Create test users for development environments only"
-    echo ""
-    echo "Usage: $0 [--quiet] TYPE ROLE COMPETENT_AUTHORITY EMAIL PASSWORD FIRST_NAME LAST_NAME JOB_TITLE PHONE_COUNTRY_CODE PHONE_NUMBER"
-    echo ""
+    print_banner "ESOS User Creation Script"
+    log_note "Create test users for development environments only"
+    log_note ""
+    log_note "Usage: $0 TYPE ROLE COMPETENT_AUTHORITY EMAIL PASSWORD FIRST_NAME LAST_NAME JOB_TITLE PHONE_COUNTRY_CODE PHONE_NUMBER"
+    log_note ""
     print_section "Parameters"
-    echo "  --quiet               Show minimal output (optional)"
-    echo "  TYPE                  User type (OPERATOR, REGULATOR, VERIFIER)"
-    echo "  ROLE                  User role (see below for valid combinations)"
-    echo "  COMPETENT_AUTHORITY   Authority (ENGLAND, NORTHERN_IRELAND, SCOTLAND, WALES, OPRED)"
-    echo "  EMAIL                 User email address"
-    echo "  PASSWORD              User password"
-    echo "  FIRST_NAME            User first name"
-    echo "  LAST_NAME             User last name"
-    echo "  JOB_TITLE             User job title"
-    echo "  PHONE_COUNTRY_CODE    Phone country code (e.g., 44 for UK, 1 for US)"
-    echo "  PHONE_NUMBER          Phone number without country code"
-    echo ""
+    log_note "TYPE                  User type (OPERATOR, REGULATOR, VERIFIER)"
+    log_note "ROLE                  User role (see below for valid combinations)"
+    log_note "COMPETENT_AUTHORITY   Authority (ENGLAND, NORTHERN_IRELAND, SCOTLAND, WALES, OPRED)"
+    log_note "EMAIL                 User email address"
+    log_note "PASSWORD              User password"
+    log_note "FIRST_NAME            User first name"
+    log_note "LAST_NAME             User last name"
+    log_note "JOB_TITLE             User job title"
+    log_note "PHONE_COUNTRY_CODE    Phone country code (e.g., 44 for UK, 1 for US)"
+    log_note "PHONE_NUMBER          Phone number without country code"
+    log_note ""
     print_section "Valid Role Combinations"
-    echo "  OPERATOR roles:       operator_admin, operator, consultant_agent, emitter_contact"
-    echo "  REGULATOR roles:      ca_super_user, regulator_admin_team, regulator_team_leader,"
-    echo "                        regulator_technical_officer, service_super_user"
-    echo "  VERIFIER roles:       verifier_admin, verifier"
-    echo ""
-    print_section "Examples"
-    echo "  # Create operator admin"
-    echo "  $0 OPERATOR operator_admin ENGLAND john@company.com MyPass123! John Doe 'Operations Manager' 44 1234567890"
-    echo ""
-    echo "  # Create regulator super user"
-    echo "  $0 REGULATOR ca_super_user ENGLAND admin@regulator.gov.uk SecurePass1! Jane Smith 'Super Admin' 44 9876543210"
-    echo ""
-    echo "  # Create verifier admin"
-    echo "  $0 VERIFIER verifier_admin ENGLAND verifier@company.com VerifyPass1! Bob Wilson 'Verification Lead' 44 5556667777"
+    log_note "OPERATOR roles:       operator_admin, operator, consultant_agent, emitter_contact"
+    log_note "REGULATOR roles:      ca_super_user, regulator_admin_team, regulator_team_leader,"
+    log_note "                        regulator_technical_officer, service_super_user"
+    log_note "VERIFIER roles:       verifier_admin, verifier"
+    log_note ""
+    log_note "Examples"
+    log_note "# Create operator admin"
+    log_note "$0 OPERATOR operator_admin ENGLAND john@company.com MyPassword123! John Doe 'Operations Manager' 44 1234567890"
+    log_note ""
+    log_note "# Create regulator super user"
+    log_note "$0 REGULATOR ca_super_user ENGLAND admin@regulator.gov.uk SecurePass1! Jane Smith 'Super Admin' 44 9876543210"
+    log_note ""
+    log_note "# Create verifier admin"
+    log_note "$0 VERIFIER verifier_admin ENGLAND verifier@company.com VerifyPass1! Bob Wilson 'Verification Lead' 44 5556667777"
 }
 
 validate_parameters() {
-    local user_type="$1"
-    local role="$2"
-    local competent_authority="$3"
-    local email="$4"
-    local password="$5"
-    local first_name="$6"
-    local last_name="$7"
-    local job_title="$8"
-    local phone_country_code="$9"
-    local phone_number="${10}"
+    local user_type="${1:-}"
+    local role="${2:-}"
+    local competent_authority="${3:-}"
+    local email="${4:-}"
+    local password="${5:-}"
+    local first_name="${6:-}"
+    local last_name="${7:-}"
+    local job_title="${8:-}"
+    local phone_country_code="${9:-}"
+    local phone_number="${10:-}"
     
     # Check if all parameters are provided
     if [[ -z "$user_type" || -z "$role" || -z "$competent_authority" || -z "$email" || 
           -z "$password" || -z "$first_name" || -z "$last_name" || -z "$job_title" || 
           -z "$phone_country_code" || -z "$phone_number" ]]; then
-        print_error "All parameters are required" "${LOG_NAMESPACE}"
+        log_error "All parameters are required"
         show_usage
         exit 1
     fi
@@ -135,7 +125,7 @@ validate_parameters() {
         "OPERATOR"|"REGULATOR"|"VERIFIER")
             ;;
         *)
-            print_error "Invalid user type: $user_type. Must be OPERATOR, REGULATOR, or VERIFIER" "${LOG_NAMESPACE}"
+            log_error "Invalid user type: $user_type. Must be OPERATOR, REGULATOR, or VERIFIER"
             exit 1
             ;;
     esac
@@ -147,8 +137,8 @@ validate_parameters() {
                 "operator_admin"|"operator"|"consultant_agent"|"emitter_contact")
                     ;;
                 *)
-                    print_error "Invalid OPERATOR role: $role" "${LOG_NAMESPACE}"
-                    print_note "Valid OPERATOR roles: operator_admin, operator, consultant_agent, emitter_contact"
+                    log_error "Invalid OPERATOR role: $role"
+                    log_note "Valid OPERATOR roles: operator_admin, operator, consultant_agent, emitter_contact"
                     exit 1
                     ;;
             esac
@@ -158,8 +148,8 @@ validate_parameters() {
                 "ca_super_user"|"regulator_admin_team"|"regulator_team_leader"|"regulator_technical_officer"|"service_super_user")
                     ;;
                 *)
-                    print_error "Invalid REGULATOR role: $role" "${LOG_NAMESPACE}"
-                    print_note "Valid REGULATOR roles: ca_super_user, regulator_admin_team, regulator_team_leader, regulator_technical_officer, service_super_user"
+                    log_error "Invalid REGULATOR role: $role"
+                    log_note "Valid REGULATOR roles: ca_super_user, regulator_admin_team, regulator_team_leader, regulator_technical_officer, service_super_user"
                     exit 1
                     ;;
             esac
@@ -169,8 +159,8 @@ validate_parameters() {
                 "verifier_admin"|"verifier")
                     ;;
                 *)
-                    print_error "Invalid VERIFIER role: $role" "${LOG_NAMESPACE}"
-                    print_note "Valid VERIFIER roles: verifier_admin, verifier"
+                    log_error "Invalid VERIFIER role: $role"
+                    log_note "Valid VERIFIER roles: verifier_admin, verifier"
                     exit 1
                     ;;
             esac
@@ -182,31 +172,31 @@ validate_parameters() {
         "ENGLAND"|"NORTHERN_IRELAND"|"SCOTLAND"|"WALES"|"OPRED")
             ;;
         *)
-            print_error "Invalid competent authority: $competent_authority" "${LOG_NAMESPACE}"
-            print_note "Valid authorities: ENGLAND, NORTHERN_IRELAND, SCOTLAND, WALES, OPRED"
+            log_error "Invalid competent authority: $competent_authority"
+            log_note "Valid authorities: ENGLAND, NORTHERN_IRELAND, SCOTLAND, WALES, OPRED"
             exit 1
             ;;
     esac
     
     # Basic email validation
     if [[ ! "$email" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
-        print_error "Invalid email format: $email" "${LOG_NAMESPACE}"
+        log_error "Invalid email format: $email"
         exit 1
     fi
     
     # Validate phone country code (should be 1-4 digits)
     if [[ ! "$phone_country_code" =~ ^[0-9]{1,4}$ ]]; then
-        print_error "Invalid phone country code: $phone_country_code (should be 1-4 digits)" "${LOG_NAMESPACE}"
+        log_error "Invalid phone country code: $phone_country_code (should be 1-4 digits)"
         exit 1
     fi
     
     # Validate phone number (should be at least 6 digits)
     if [[ ! "$phone_number" =~ ^[0-9]{6,}$ ]]; then
-        print_error "Invalid phone number: $phone_number (should be at least 6 digits, numbers only)" "${LOG_NAMESPACE}"
+        log_error "Invalid phone number: $phone_number (should be at least 6 digits, numbers only)"
         exit 1
     fi
     
-    print_success "Parameter validation passed" "${LOG_NAMESPACE}"
+    log_success "Parameter validation passed"
 }
 
 # Function to generate base64url encoding (JWT compliant)
@@ -240,26 +230,18 @@ generate_registration_jwt() {
 }
 
 check_or_create_bootstrap_admin() {
-    if [[ "$QUIET_MODE" != "true" ]]; then
-        print_section "Checking Bootstrap Admin"
-    fi
+    print_section "Checking Bootstrap Admin"
     
     # Check if a super admin already exists in the database
     local existing_admin=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
         "SELECT COUNT(*) FROM au_authority WHERE code = 'ca_super_user' AND status = 'ACTIVE'" 2>/dev/null | xargs)
     
     if [[ "$existing_admin" -gt 0 ]]; then
-        if [[ "$QUIET_MODE" != "true" ]]; then
-            print_success "Bootstrap admin already exists" "${LOG_NAMESPACE}"
-        fi
+        log_note "Bootstrap admin already exists"
         return 0
     fi
     
-    if [[ "$QUIET_MODE" == "true" ]]; then
-        quiet_print "Creating user: Regulator - ${BOOTSTRAP_ADMIN_EMAIL}"
-    else
-        print_info "No bootstrap admin found. Creating one..."
-    fi
+    log_note "No bootstrap admin found. Creating one..."
     
     # Create bootstrap admin user
     local bootstrap_email="${BOOTSTRAP_ADMIN_EMAIL}"
@@ -268,14 +250,12 @@ check_or_create_bootstrap_admin() {
     local bootstrap_password="${BOOTSTRAP_ADMIN_PASSWORD}"
     local bootstrap_ca="${BOOTSTRAP_ADMIN_CA}"
     
-    if [[ "$QUIET_MODE" != "true" ]]; then
-        print_info "Creating bootstrap admin: $bootstrap_email"
-    fi
+    log_note "Creating bootstrap admin: $bootstrap_email"
     
     # Get Keycloak admin token
-    local admin_token=$(getKeycloakAdminAccessToken)
+    local admin_token=$(get_keycloak_admin_access_token)
     if [[ "$admin_token" == "null" || -z "$admin_token" ]]; then
-        print_error "Failed to get Keycloak admin token" "${LOG_NAMESPACE}"
+        log_error "Failed to get Keycloak admin token"
         return 1
     fi
     
@@ -300,7 +280,7 @@ check_or_create_bootstrap_admin() {
     
     local http_code="${keycloak_user_response: -3}"
     if [[ "$http_code" != "201" ]]; then
-        print_error "Failed to create Keycloak user. HTTP code: $http_code" "${LOG_NAMESPACE}"
+        log_error "Failed to create Keycloak user. HTTP code: $http_code"
         return 1
     fi
     
@@ -310,13 +290,11 @@ check_or_create_bootstrap_admin() {
         -H "Authorization: Bearer $admin_token" | jq -r '.[0].id')
     
     if [[ "$keycloak_user_id" == "null" || -z "$keycloak_user_id" ]]; then
-        print_error "Failed to get Keycloak user ID" "${LOG_NAMESPACE}"
+        log_error "Failed to get Keycloak user ID"
         return 1
     fi
     
-    if [[ "$QUIET_MODE" != "true" ]]; then
-        print_success "Created Keycloak user with ID: $keycloak_user_id" "${LOG_NAMESPACE}"
-    fi
+    log_debug "Created Keycloak user with ID: $keycloak_user_id"
     
     # Create authority record in database
     local authority_sql="
@@ -328,13 +306,11 @@ check_or_create_bootstrap_admin() {
     local authority_id=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -q -c "$authority_sql" 2>/dev/null | xargs)
     
     if [[ -z "$authority_id" || "$authority_id" == "" ]]; then
-        print_error "Failed to create authority record" "${LOG_NAMESPACE}"
+        log_error "Failed to create authority record"
         return 1
     fi
     
-    if [[ "$QUIET_MODE" != "true" ]]; then
-        print_success "Created authority record with ID: $authority_id" "${LOG_NAMESPACE}"
-    fi
+    log_debug "Created authority record with ID: $authority_id"
     
     # Copy permissions from role template to authority
     local permissions_sql="
@@ -350,10 +326,8 @@ check_or_create_bootstrap_admin() {
     local permissions_count=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
         "SELECT COUNT(*) FROM au_authority_permission WHERE authority_id = $authority_id" 2>/dev/null | xargs)
     
-    if [[ "$QUIET_MODE" != "true" ]]; then
-        print_success "Copied $permissions_count permissions to bootstrap admin" "${LOG_NAMESPACE}"
-        print_success "Bootstrap admin created successfully!" "${LOG_NAMESPACE}"
-    fi
+    log_debug "Copied $permissions_count permissions to bootstrap admin"
+    log_success "Bootstrap admin created successfully!"
     
     return 0
 }
@@ -374,7 +348,7 @@ get_esos_api_token() {
     local access_token=$(echo "$token_response" | jq -r '.access_token // empty')
     
     if [[ -z "$access_token" || "$access_token" == "null" ]]; then
-        print_error "Failed to get API access token for user: $email" "${LOG_NAMESPACE}"
+        log_error "Failed to get API access token for user: $email"
         return 1
     fi
     
@@ -407,7 +381,7 @@ create_user_via_api() {
     
     local api_token=$(get_esos_api_token "$bootstrap_email" "$bootstrap_password")
     if [[ $? -ne 0 || -z "$api_token" ]]; then
-        print_error "Failed to get API token" "${LOG_NAMESPACE}"
+        log_error "Failed to get API token"
         return 1
     fi
     
@@ -419,7 +393,7 @@ create_user_via_api() {
             create_verifier_user "$api_token" "$role" "$email" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
             ;;
         *)
-            print_error "Unsupported user type for API creation: $user_type" "${LOG_NAMESPACE}"
+            log_error "Unsupported user type for API creation: $user_type"
             return 1
             ;;
     esac
@@ -436,7 +410,7 @@ create_regulator_user() {
     local phone_country_code="$8"
     local phone_number="$9"
     
-    print_info "Creating regulator user via API..."
+    log_note "Creating regulator user via API..."
     
     # Create invitation request
     local invitation_data=$(jq -n \
@@ -470,12 +444,12 @@ create_regulator_user() {
     local response_body="${response%???}"
     
     if [[ "$http_code" == "200" || "$http_code" == "204" ]]; then
-        print_success "Regulator invitation sent successfully" "${LOG_NAMESPACE}"
-        print_note "User must check email and accept invitation to complete registration"
+        log_success "Regulator invitation sent successfully"
+        log_note "User must check email and accept invitation to complete registration"
         return 0
     else
-        print_error "Failed to send regulator invitation. HTTP code: $http_code" "${LOG_NAMESPACE}"
-        print_note "Response: $response_body"
+        log_error "Failed to send regulator invitation. HTTP code: $http_code"
+        log_note "Response: $response_body"
         return 1
     fi
 }
@@ -490,21 +464,21 @@ create_operator_user() {
     local phone_country_code="$7"
     local phone_number="$8"
     
-    print_info "Creating operator user via automated registration..."
+    log_note "Creating operator user via automated registration..."
     
     # Step 1: Generate JWT token for registration
-    print_info "Generating registration token for: $email"
+    log_debug "Generating registration token for: $email"
     local jwt_token=$(generate_registration_jwt "$email")
     
     if [[ -z "$jwt_token" ]]; then
-        print_error "Failed to generate registration token" "${LOG_NAMESPACE}"
+        log_error "Failed to generate registration token"
         return 1
     fi
     
-    print_success "Generated registration token" "${LOG_NAMESPACE}"
+    log_debug "Generated registration token"
     
     # Step 2: Verify the token (optional validation step)
-    print_info "Verifying registration token..."
+    log_debug "Verifying registration token..."
     local verify_response=$(curl -s -w "%{http_code}" -X POST \
         "$API_APPLICATION_API_URL/v1.0/operator-users/registration/token-verification" \
         -H "Content-Type: application/json" \
@@ -514,14 +488,14 @@ create_operator_user() {
     local verify_response_body="${verify_response%???}"
     
     if [[ "$verify_http_code" == "200" ]]; then
-        print_success "Token verification successful" "${LOG_NAMESPACE}"
+        log_debug "Token verification successful"
     else
-        print_warning "Token verification failed (HTTP: $verify_http_code)" "${LOG_NAMESPACE}"
-        print_note "Response: $verify_response_body"
+        log_warn "Token verification failed (HTTP: $verify_http_code)"
+        log_note "Response: $verify_response_body"
     fi
     
     # Step 3: Complete the registration
-    print_info "Completing user registration..."
+    log_note "Completing user registration..."
     
     # Build registration payload using jq to properly escape JSON
     local registration_data=$(jq -n \
@@ -560,29 +534,29 @@ create_operator_user() {
     local reg_response_body="${registration_response%???}"
     
     if [[ "$reg_http_code" == "200" ]]; then
-        print_success "Operator user registration completed successfully!" "${LOG_NAMESPACE}"
-        print_note "User details:"
-        print_note "  Email: $email"
-        print_note "  Name: $first_name $last_name"
-        print_note "  Status: REGISTERED"
-        print_note ""
-        print_note "Next steps for user:"
-        print_note "1. Login to the application using: $email / $password"
-        print_note "2. Click 'Apply for new organisation account'"
-        print_note "3. Complete the organization account application"
-        print_note "4. Wait for regulatory approval"
+        log_success "Operator user registration completed successfully!"
+        log_note "User details:"
+        log_note "  Email: $email"
+        log_note "  Name: $first_name $last_name"
+        log_note "  Status: REGISTERED"
+        log_note ""
+        log_note "Next steps for user:"
+        log_note "1. Login to the application using: $email / $password"
+        log_note "2. Click 'Apply for new organisation account'"
+        log_note "3. Complete the organization account application"
+        log_note "4. Wait for regulatory approval"
         return 0
     else
-        print_error "Registration failed (HTTP: $reg_http_code)" "${LOG_NAMESPACE}"
-        print_note "Response: $reg_response_body"
+        log_error "Registration failed (HTTP: $reg_http_code)"
+        log_note "Response: $reg_response_body"
         
         # Fallback to manual instructions
-        print_warning "Falling back to manual registration approach" "${LOG_NAMESPACE}"
-        print_note "Please complete registration manually:"
-        print_note "1. Visit the application registration page"
-        print_note "2. Click 'Create a sign in'"
-        print_note "3. Enter email: $email"
-        print_note "4. Complete verification and registration with provided details"
+        log_warn "Falling back to manual registration approach"
+        log_note "Please complete registration manually:"
+        log_note "1. Visit the application registration page"
+        log_note "2. Click 'Create a sign in'"
+        log_note "3. Enter email: $email"
+        log_note "4. Complete verification and registration with provided details"
         return 1
     fi
 }
@@ -597,7 +571,7 @@ create_verifier_user() {
     local phone_country_code="$7"
     local phone_number="$8"
     
-    print_info "Creating verifier user via API..."
+    log_note "Creating verifier user via API..."
     
     # Create invitation request  
     local invitation_data=$(jq -n \
@@ -628,37 +602,17 @@ create_verifier_user() {
     local response_body="${response%???}"
     
     if [[ "$http_code" == "200" || "$http_code" == "204" ]]; then
-        print_success "Verifier invitation sent successfully" "${LOG_NAMESPACE}"
-        print_note "User must check email and accept invitation to complete registration"
+        log_success "Verifier invitation sent successfully"
+        log_note "User must check email and accept invitation to complete registration"
         return 0
     else
-        print_error "Failed to send verifier invitation. HTTP code: $http_code" "${LOG_NAMESPACE}"
-        print_note "Response: $response_body"
+        log_error "Failed to send verifier invitation. HTTP code: $http_code"
+        log_note "Response: $response_body"
         return 1
     fi
 }
 
 create_user_main() {
-    # Parse --quiet flag
-    local quiet_mode=false
-    local args=()
-    
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-            --quiet)
-                quiet_mode=true
-                QUIET_MODE=true
-                shift
-                ;;
-            *)
-                args+=("$1")
-                shift
-                ;;
-        esac
-    done
-    
-    # Set the positional parameters to the remaining arguments
-    set -- "${args[@]}"
     
     # Show usage if no parameters are provided
     if [[ $# -eq 0 ]]; then
@@ -667,7 +621,7 @@ create_user_main() {
     fi
     
     # Check environment variables
-    checkEnvironmentVariables REQUIRED_ENV_VARS
+    check_environment_variables REQUIRED_ENV_VARS
     
     # Validate parameters
     validate_parameters "$@"
@@ -683,24 +637,17 @@ create_user_main() {
     local phone_country_code="$9"
     local phone_number="${10}"
     
-    if [[ "$QUIET_MODE" == "true" ]]; then
-        quiet_print "Creating user: $user_type - $email"
-    else
-        print_banner "Creating $user_type user with role $role"
-        print_info "Email: $email"
-        print_info "Name: $first_name $last_name"
-        print_info "Authority: $competent_authority"
-    fi
+    print_banner "Creating $user_type user with role $role"
+    log_note "Email: $email"
+    log_note "Name: $first_name $last_name"
+    log_note "Authority: $competent_authority"
     
     # Check if bootstrap admin exists, create if needed
     check_or_create_bootstrap_admin
     
     # Create user via appropriate API
     create_user_via_api "$user_type" "$role" "$competent_authority" "$email" "$password" "$first_name" "$last_name" "$job_title" "$phone_country_code" "$phone_number"
-    
-    if [[ "$QUIET_MODE" != "true" ]]; then
-        print_log_summary "${LOG_NAMESPACE}"
-    fi
+   
 }
 
 # Only run main function if script is executed directly (not sourced)

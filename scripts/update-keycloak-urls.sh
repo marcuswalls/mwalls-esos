@@ -5,8 +5,8 @@
 
 # Load environment variables and common functions
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-source "$SCRIPT_DIR/load-env-vars.sh"
 source "$SCRIPT_DIR/common-functions.sh"
+load_environment_variables
 
 # Initialize logging
 LOG_NAMESPACE="${LOG_NAMESPACE:-keycloak}"
@@ -21,7 +21,7 @@ check_urls_environment() {
         "KC_BOOTSTRAP_ADMIN_USERNAME" 
         "KC_BOOTSTRAP_ADMIN_PASSWORD" 
     )
-    checkEnvironmentVariables REQUIRED_ENV_VARS
+    check_environment_variables REQUIRED_ENV_VARS
 }
 
 get_client_config() {
@@ -237,7 +237,7 @@ run_keycloak_urls_update() {
 
     # Obtain an access token for Keycloak admin operations
     log_info "Getting Keycloak admin access token..."
-    KEYCLOAK_ADMIN_ACCESS_TOKEN=$(getKeycloakAdminAccessToken)
+    KEYCLOAK_ADMIN_ACCESS_TOKEN=$(get_keycloak_admin_access_token)
     if [ -z "$KEYCLOAK_ADMIN_ACCESS_TOKEN" ]; then
         log_error "Failed to obtain Keycloak admin access token"
         return 1

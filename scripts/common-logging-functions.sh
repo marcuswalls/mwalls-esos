@@ -463,7 +463,7 @@ print_section() {
     local message=$1
     local level=${2:-NOTE}
     log_raw ${level} "NONE" "🔧" ${__COMMON_LOG_INDENT__} "${message}";
-    print_separator ${level} "NONE" "=" "$(__get_line_width_minus_indent)"
+    print_separator ${level} "NONE" "-" "$(__get_line_width_minus_indent)"
 }
 
 # Print a separator line using repeated characters

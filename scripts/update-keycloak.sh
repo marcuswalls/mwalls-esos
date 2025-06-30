@@ -5,8 +5,8 @@
 
 # Load environment variables and common functions
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-source "$SCRIPT_DIR/load-env-vars.sh"
 source "$SCRIPT_DIR/common-functions.sh"
+load_environment_variables
 
 # Check that required environment variables are set
 REQUIRED_ENV_VARS=(
@@ -15,10 +15,10 @@ REQUIRED_ENV_VARS=(
     "KC_BOOTSTRAP_ADMIN_USERNAME" 
     "KC_BOOTSTRAP_ADMIN_PASSWORD" 
 )
-checkEnvironmentVariables REQUIRED_ENV_VARS
+check_environment_variables REQUIRED_ENV_VARS
 
 # Initialize logging
-LOG_NAMESPACE="keycloak"
+LOG_NAMESPACE="${LOG_NAMESPACE:-keycloak}"
 init_log_counters "${LOG_NAMESPACE}"
 
 print_banner "Keycloak Development Configuration Update"

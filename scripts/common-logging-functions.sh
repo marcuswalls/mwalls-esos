@@ -122,27 +122,36 @@ get_line_width() {
 
 # Set the line width for banners, separators, and padding functions
 # Parameters:
-#   $1 - width: Line width in characters (optional, defaults to 110 if not provided)
+#   $1 - width: Line width in characters (required integer)
+#            - If 0: reset to default (110)
+#            - If negative: error
+#            - If positive: set to that value
 # Returns: 0 on success, 1 on validation error
 set_line_width() {
+    # First parameter is required
+    if [[ $# -eq 0 ]]; then
+        echo "ERROR: set_line_width requires a width parameter" >&2
+        return 1
+    fi
+    
     local width="${1}"
     
-    # If no parameter specified, use default
-    if [[ $# -eq 0 || -z "${width}" ]]; then
+    # Validate that the parameter is an integer (including negative)
+    if [[ ! "${width}" =~ ^-?[0-9]+$ ]]; then
+        echo "ERROR: Line width must be an integer, got: '${width}'" >&2
+        return 1
+    fi
+    
+    # Handle negative values as error
+    if [[ "${width}" -lt 0 ]]; then
+        echo "ERROR: Line width cannot be negative, got: '${width}'" >&2
+        return 1
+    fi
+    
+    # Handle zero as reset to default
+    if [[ "${width}" -eq 0 ]]; then
         __COMMON_LOG_LINE_WIDTH__="$__COMMON_LOG_LINE_WIDTH_DEFAULT__"
         return 0
-    fi
-    
-    # Validate that the parameter is a positive integer
-    if [[ ! "${width}" =~ ^[0-9]+$ ]]; then
-        echo "ERROR: Line width must be a positive integer, got: '${width}'" >&2
-        return 1
-    fi
-    
-    # Ensure it's not zero
-    if [[ "${width}" -eq 0 ]]; then
-        echo "ERROR: Line width must be greater than zero" >&2
-        return 1
     fi
     
     # Save the validated width
@@ -157,15 +166,19 @@ set_line_width() {
 # Note: Only initializes if the namespace hasn't been initialized before
 init_log_counters() {
 
-    # Only initialize if the namespace is not already set
-    local namespace="${1:-$(get_counter_namespace)}"
+    # Get namespace, with safe fallback to default
+    local namespace="${1:-}"
+    if [[ -z "${namespace}" ]]; then
+        namespace="${COMMON_LOG_COUNTER_NAMESPACE:-${__COMMON_LOG_COUNTER_NAMESPACE__:-${__COMMON_LOG_COUNTER_NAMESPACE_DEFAULT__}}}"
+    fi
     __COMMON_LOG_COUNTER_NAMESPACE__="${namespace}"
 
-    if [[ ! -v __COMMON_LOG_COUNTERS__["${namespace}_ERROR"] ]]; then
-        __COMMON_LOG_COUNTERS__["${namespace}_ERROR"]=0
-        __COMMON_LOG_COUNTERS__["${namespace}_WARN"]=0
-        __COMMON_LOG_COUNTERS__["${namespace}_SUCCESS"]=0
-    fi
+    # Initialize counters (safe under set -u)
+    set +u
+    __COMMON_LOG_COUNTERS__["${namespace}_ERROR"]="${__COMMON_LOG_COUNTERS__["${namespace}_ERROR"]:-0}"
+    __COMMON_LOG_COUNTERS__["${namespace}_WARN"]="${__COMMON_LOG_COUNTERS__["${namespace}_WARN"]:-0}"
+    __COMMON_LOG_COUNTERS__["${namespace}_SUCCESS"]="${__COMMON_LOG_COUNTERS__["${namespace}_SUCCESS"]:-0}"
+    set -u
 }
 
 
@@ -190,7 +203,7 @@ reset_log_counters() {
 # Get the current active counter namespace
 # Returns: Current namespace (default: "default")
 get_counter_namespace() {
-    local namespace="${COMMON_LOG_COUNTER_NAMESPACE:-${__COMMON_LOG_COUNTER_NAMESPACE_DEFAULT__}}"
+    local namespace="${COMMON_LOG_COUNTER_NAMESPACE:-${__COMMON_LOG_COUNTER_NAMESPACE__:-${__COMMON_LOG_COUNTER_NAMESPACE_DEFAULT__}}}"
     echo "${namespace}"
 }
 
@@ -221,7 +234,11 @@ get_counter() {
             ;;
     esac
     
-    echo "${__COMMON_LOG_COUNTERS__["${namespace}_${type}"]:-0}"
+    # Safe counter access under set -u
+    set +u
+    local value="${__COMMON_LOG_COUNTERS__["${namespace}_${type}"]:-0}"
+    set -u
+    echo "$value"
 }
 
 
@@ -251,7 +268,11 @@ increment_counter() {
     esac
     
     local key="${namespace}_${type}"
-    __COMMON_LOG_COUNTERS__["$key"]=$((${__COMMON_LOG_COUNTERS__["$key"]:-0} + 1))
+    # Safe counter increment under set -u
+    set +u
+    local current_value="${__COMMON_LOG_COUNTERS__["$key"]:-0}"
+    __COMMON_LOG_COUNTERS__["$key"]=$((current_value + 1))
+    set -u
 }
 
 
@@ -558,4 +579,6 @@ export -f reset_log_counters
 export -f increment_counter
 export -f get_counter
 export -f get_counter_namespace
+
+# Note: Auto-initialization removed to avoid conflicts with test environment
 

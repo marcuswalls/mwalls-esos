@@ -31,8 +31,10 @@ readonly COMMON_LOGGING_FUNCTIONS_LOADED=1
 
 # Global associative array declaration - private arrays
 declare -A __COMMON_LOG_LEVELS__=(
-    [DEBUG]=40
-    [INFO]=30
+    [DEBUG]=60
+    [NOTE]=50
+    [INFO]=40
+    [SUCCESS]=30
     [WARN]=20
     [ERROR]=10
 )
@@ -260,7 +262,7 @@ increment_counter() {
 #   $2 - color_name: Text color (required, valid color names from __COMMON_LOG_COLORS__)
 #   $3 - icon_name: Icon to display (required, valid icon names from __COMMON_LOG_ICONS__ or custom text)
 #   $4 - indent_value: Number of spaces to indent (required, must be positive integer or 0)
-#   $5+ - message: Log message text (required, remaining parameters form the message)
+#   $5+ - message: Log message text (required but can be empty string, remaining parameters form the message)
 # Returns: 0 on success, 1 on validation error
 # Note: Outputs to stdout/stderr based on log level and respects COMMON_LOG_STD_LEVEL setting
 log_raw() {
@@ -271,14 +273,14 @@ log_raw() {
         return 1
     fi
 
-    local level_name="${1}";
-    local color_name="${2}";
-    local icon_name="${3}";
+    local level_name="${1^^}";
+    local color_name="${2^^}";
+    local icon_name="${3^^}";
     local indent_value="${4}";
 
     # Validate level parameter
     if [[ ! -v __COMMON_LOG_LEVELS__["${level_name}"] ]]; then
-        echo "ERROR: Invalid level '${level_name}'. Valid values are: DEBUG, INFO, WARN, ERROR" >&2
+        echo "ERROR: Invalid level '${level_name}'. Valid values are: DEBUG, NOTE, INFO, SUCCESS, WARN, ERROR" >&2
         return 1
     fi
 
@@ -296,6 +298,14 @@ log_raw() {
         icon_value=${icon_name};
     fi
 
+    local icon=${icon_value};
+    local no_icon=$([[ -z "$3" ]] && echo 1 || echo 0)
+    if [[ "${custom_icon}" -eq 0 ]]; then
+        icon="${__COMMON_LOG_ICONS__[$icon_name]}";
+    fi
+    local icon_string=$([[ $no_icon -eq 1 ]] && echo "" || echo "$icon ")
+
+
     # Validate indent parameter (must be a positive integer or zero)
     if [[ ! "${indent_value}" =~ ^[0-9]+$ ]]; then
         echo "ERROR: Invalid indent value '${indent_value}'. Must be a positive integer or zero" >&2
@@ -303,32 +313,23 @@ log_raw() {
     fi
 
     local color="${__COMMON_LOG_COLORS__[$color_name]}";
-    local icon=${icon_value};
-    if [[ "${custom_icon}" -eq 0 ]]; then
-        icon="${__COMMON_LOG_ICONS__[$icon_name]}";
-    fi
     
     shift 4;
     local message="${@}";
   
-    # Validate message is not empty
-    if [[ -z "${message// }" ]]; then
-        echo "ERROR: Message cannot be empty" >&2
-        return 1
-    fi
-
-
     # Determine the required logging level for the screen
-    local std_level_name="${COMMON_LOG_STD_LEVEL:-INFO}";
+    local std_level_name="${COMMON_LOG_STD_LEVEL:-NOTE}";
+    std_level_name="${std_level_name^^}";
     if [[ ! -v __COMMON_LOG_LEVELS__["${std_level_name}"] ]]; then
-        echo "ERROR: Invalid COMMON_LOG_STD_LEVEL '${std_level_name}'. Valid values are: DEBUG, INFO, WARN, ERROR" >&2
+        echo "ERROR: Invalid COMMON_LOG_STD_LEVEL '${std_level_name}'. Valid values are: DEBUG, NOTE, INFO, SUCCESS, WARN, ERROR" >&2
         return 1
     fi
 
     # Determine the required logging level for the file
     local file_level_name="${COMMON_LOG_FILE_LEVEL:-DEBUG}";
+    file_level_name="${file_level_name^^}";
     if [[ ! -v __COMMON_LOG_LEVELS__["${file_level_name}"] ]]; then
-        echo "ERROR: Invalid COMMON_LOG_FILE_LEVEL '${file_level_name}'. Valid values are: DEBUG, INFO, WARN, ERROR" >&2
+        echo "ERROR: Invalid COMMON_LOG_FILE_LEVEL '${file_level_name}'. Valid values are: DEBUG, NOTE, INFO, SUCCESS, WARN, ERROR" >&2
         return 1
     fi
 
@@ -350,7 +351,7 @@ log_raw() {
     # file format has {date} {level} {indent}{message}
     # screen format has {color}{indent}{icon} {message}{nc}
 
-    local std_line="${color}${indent}${icon} ${message}${__COMMON_LOG_COLORS__[NONE]}";
+    local std_line="${color}${indent}${icon_string}${message}${__COMMON_LOG_COLORS__[NONE]}";
     if [[ "${std_level_num}" -ge "${level_num}" ]]; then
         if [[ "${level_num}" -le "20" ]]; then
             echo -e "${std_line}" >&2;
@@ -380,7 +381,7 @@ log_debug() {
 # Parameters:
 #   $@ - message: All parameters form the note message
 log_note() {
-    log_raw "INFO" "NONE" "NONE" ${__COMMON_LOG_INDENT__} "$@";
+    log_raw "NOTE" "NONE" "NONE" ${__COMMON_LOG_INDENT__} "$@";
 }
 
 # Log an info message (blue text, info icon, current indentation)
@@ -395,7 +396,7 @@ log_info() {
 #   $@ - message: All parameters form the success message
 # Note: Automatically increments the SUCCESS counter
 log_success() {
-    log_raw "INFO" "GREEN" "SUCCESS" ${__COMMON_LOG_INDENT__} "$@";
+    log_raw "SUCCESS" "GREEN" "SUCCESS" ${__COMMON_LOG_INDENT__} "$@";
     increment_counter "SUCCESS"
 }
 
@@ -419,23 +420,27 @@ log_error() {
 
 # Print a banner with the message surrounded by equal signs
 # Parameters:
-#   $@ - message: All parameters form the banner message
+#   $1 - message: the message
+#   $2 - level: the level (optional, defaults to INFO)
 # Output: Top separator, indented message, bottom separator
 print_banner() {
-    local message="$@"
-    print_separator "NONE" "=" "${__COMMON_LOG_LINE_WIDTH__}"
-    log_raw "INFO" "NONE" "NONE" ${__COMMON_LOG_INDENT__} "  ${message}";
-    print_separator "NONE" "=" "${__COMMON_LOG_LINE_WIDTH__}"
+    local message=$1
+    local level=${2:-INFO}
+    print_separator ${level} "NONE" "=" "$(__get_line_width_minus_indent)"
+    log_raw ${level} "NONE" "NONE" ${__COMMON_LOG_INDENT__} "${message}";
+    print_separator ${level} "NONE" "=" "$(__get_line_width_minus_indent)"
 }
 
 # Print a section header with spanner icon and underline
 # Parameters:
-#   $@ - message: All parameters form the section header message
+#   $1 - message: the section name
+#   $2 - level: the level (optional, defaults to NOTE)
 # Output: Message with spanner icon, followed by dash separator
 print_section() {
-    local message=$@;
-    log_raw "INFO" "NONE" "🔧" ${__COMMON_LOG_INDENT__} "${message}";
-    print_separator "NONE" "-" "${__COMMON_LOG_LINE_WIDTH__}";
+    local message=$1
+    local level=${2:-NOTE}
+    log_raw ${level} "NONE" "🔧" ${__COMMON_LOG_INDENT__} "${message}";
+    print_separator ${level} "NONE" "=" "$(__get_line_width_minus_indent)"
 }
 
 # Print a separator line using repeated characters
@@ -445,9 +450,10 @@ print_section() {
 #   $3 - width: Width of separator (optional, defaults to current line width)
 # Returns: 0 on success, 1 on validation error
 print_separator() {
-    local color="${1:-NONE}";
-    local char="${2:-=}";
-    local width="${3:-${__COMMON_LOG_LINE_WIDTH__}}";
+    local level="${1:-NOTE}"
+    local color="${2:-NONE}";
+    local char="${3:-=}";
+    local width="${4:-$(__get_line_width_minus_indent)}";
     
     # Validate that width is a positive integer
     if [[ ! "${width}" =~ ^[0-9]+$ ]]; then
@@ -461,7 +467,7 @@ print_separator() {
         return 1
     fi
     
-    log_raw "INFO" ${color} "NONE" ${__COMMON_LOG_INDENT__} "$(printf -- '%*s' "${width}" "" | tr ' ' "${char}")";
+    log_raw ${level} ${color} "" ${__COMMON_LOG_INDENT__} "$(printf -- '%*s' "$((width + 3))" "" | tr ' ' "${char}")";
 }
 
 # Pad a string to a specified width with right-side padding
@@ -473,7 +479,7 @@ print_separator() {
 # Output: Padded string to stdout
 pad_right() {
     local string="$1"
-    local width="${2:-${__COMMON_LOG_LINE_WIDTH__}}"
+    local width="${2:-$(__get_line_width_minus_indent)}"
     local pad_char="${3:- }"
     
     # Validate that width is a positive integer
@@ -502,23 +508,32 @@ pad_right() {
 
 # Print a summary of all counters with formatted output
 # Parameters:
-#   $1 - linewidth: Width of the summary box (optional, defaults to current line width)
+#   $1 - logging level to use for output (optional, defaults to INFO)
+#   $2 - linewidth: Width of the summary box (optional, defaults to current line width)
 # Output: Formatted summary box showing SUCCESS, WARN, and ERROR counts
 print_count_summary() {
 
-    local linewidth="${1:-${__COMMON_LOG_LINE_WIDTH__}}"
+    local level=${1:-INFO}
+    local linewidth="$(__get_line_width_minus_indent ${2:-})"
     local success_count=$(get_counter "SUCCESS")
     local warning_count=$(get_counter "WARN")
     local error_count=$(get_counter "ERROR")
 
-    log_raw "INFO" "NONE" "NONE" ${__COMMON_LOG_INDENT__} "$(pad_right "== Summary of results " "$linewidth" "=")";
-    push_indent 3
-    log_raw "INFO" "GREEN" "SUCCESS" ${__COMMON_LOG_INDENT__} "Total successes: $(printf "%2d" ${success_count})";
-    log_raw "INFO" "YELLOW" "WARN" ${__COMMON_LOG_INDENT__} "Total warnings:  $(printf "%2d" ${warning_count})";
-    log_raw "INFO" "RED" "ERROR" ${__COMMON_LOG_INDENT__} "Total errors:    $(printf "%2d" ${error_count})";
-    pop_indent 3
-    log_raw "INFO" "NONE" "NONE" ${__COMMON_LOG_INDENT__} "$(pad_right "" "$linewidth" "=")";
+    log_raw $level "NONE" "" 0 ""
+    log_raw $level "NONE" "" ${__COMMON_LOG_INDENT__} "$(pad_right "== Summary of results " "$((linewidth + 3))" "=")";
+    log_raw $level "GREEN" "SUCCESS" ${__COMMON_LOG_INDENT__} "Total successes: $(printf "%2d" ${success_count})";
+    log_raw $level "YELLOW" "WARN" ${__COMMON_LOG_INDENT__} "Total warnings:  $(printf "%2d" ${warning_count})";
+    log_raw $level "RED" "ERROR" ${__COMMON_LOG_INDENT__} "Total errors:    $(printf "%2d" ${error_count})";
+    log_raw $level "NONE" "" ${__COMMON_LOG_INDENT__} "$(pad_right "" "$((linewidth + 3))" "=")";
+
 }
+
+# Private function to calculate the line width, taking into account current indentation
+__get_line_width_minus_indent() {
+    local linewidth="$((${1:-${__COMMON_LOG_LINE_WIDTH__}} - ${__COMMON_LOG_INDENT__}))"
+    echo $linewidth
+}
+
 
 # Export all public functions for use in other scripts
 export -f log_raw

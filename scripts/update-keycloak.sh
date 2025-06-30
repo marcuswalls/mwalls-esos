@@ -15,7 +15,7 @@ REQUIRED_ENV_VARS=(
     "KC_BOOTSTRAP_ADMIN_USERNAME" 
     "KC_BOOTSTRAP_ADMIN_PASSWORD" 
 )
-checkEnvironmentVariables $REQUIRED_ENV_VARS
+checkEnvironmentVariables REQUIRED_ENV_VARS
 
 # Initialize logging
 LOG_NAMESPACE="keycloak"
@@ -26,22 +26,22 @@ print_banner "Keycloak Development Configuration Update"
 # Source and execute update-keycloak-urls.sh
 source "$SCRIPT_DIR/update-keycloak-urls.sh"
 if ! run_keycloak_urls_update; then
-    print_error "Client URL configuration failed" "${LOG_NAMESPACE}"
+    log_error "Client URL configuration failed"
 fi
 
 # Source and execute update-keycloak-tokens.sh  
 source "$SCRIPT_DIR/update-keycloak-tokens.sh"
 if ! run_keycloak_tokens_update; then
-    print_error "Token configuration failed" "${LOG_NAMESPACE}"
+    log_error "Token configuration failed"
 fi
 
 
 # Print summary
-print_log_summary "${LOG_NAMESPACE}"
+print_count_summary
 
 # Overall status
-errors=$(get_log_count "error" "${LOG_NAMESPACE}")
+errors=$(get_counter "ERROR")
 if [ $errors -gt 0 ]; then
-    print_error "Some Keycloak configurations failed. Please check the errors above."
+    log_error "Some Keycloak configurations failed. Please check the errors above."
     exit 1
 fi

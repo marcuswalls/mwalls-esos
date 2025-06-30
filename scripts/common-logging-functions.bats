@@ -14,6 +14,9 @@
 
 # Setup function runs before each test
 setup() {
+    # Disable strict mode for tests to avoid unbound variable issues
+    set +u
+    
     # Source the logging functions
     source "${BATS_TEST_DIRNAME}/common-logging-functions.sh"
     
@@ -151,29 +154,33 @@ teardown() {
 }
 
 @test "increment_counter increases specific counter" {
-    increment_counter "SUCCESS" "test"
-    increment_counter "SUCCESS" "test"
-    increment_counter "WARN" "test"
+    # Test in isolated environment
+    run bash -c 'source common-logging-functions.sh; 
+        init_log_counters "testns"; 
+        increment_counter "SUCCESS" "testns"; 
+        increment_counter "SUCCESS" "testns"; 
+        increment_counter "WARN" "testns"; 
+        echo "SUCCESS:$(get_counter "SUCCESS" "testns") WARN:$(get_counter "WARN" "testns") ERROR:$(get_counter "ERROR" "testns")"'
     
-    success=$(get_counter "SUCCESS" "test")
-    warn=$(get_counter "WARN" "test")
-    error=$(get_counter "ERROR" "test")
-    
-    [ "$success" -eq 2 ]
-    [ "$warn" -eq 1 ]
-    [ "$error" -eq 0 ]
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"SUCCESS:2"* ]]
+    [[ "$output" == *"WARN:1"* ]]
+    [[ "$output" == *"ERROR:0"* ]]
 }
 
 @test "reset_log_counters resets all counters to zero" {
-    increment_counter "SUCCESS" "test"
-    increment_counter "WARN" "test"
-    increment_counter "ERROR" "test"
+    local test_ns="reset_test_$$"
+    init_log_counters "$test_ns"
     
-    reset_log_counters "test"
+    increment_counter "SUCCESS" "$test_ns"
+    increment_counter "WARN" "$test_ns"
+    increment_counter "ERROR" "$test_ns"
     
-    success=$(get_counter "SUCCESS" "test")
-    warn=$(get_counter "WARN" "test")
-    error=$(get_counter "ERROR" "test")
+    reset_log_counters "$test_ns"
+    
+    success=$(get_counter "SUCCESS" "$test_ns")
+    warn=$(get_counter "WARN" "$test_ns")
+    error=$(get_counter "ERROR" "$test_ns")
     
     [ "$success" -eq 0 ]
     [ "$warn" -eq 0 ]
@@ -209,52 +216,49 @@ teardown() {
 }
 
 @test "log_raw validates log level" {
-    run log_raw "INVALID" "NONE" "NONE" 0 "test message"
+    run bash -c 'source common-logging-functions.sh; log_raw "INVALID" "NONE" "NONE" 0 "test message"'
     [ "$status" -eq 1 ]
     [[ "$output" == *"Invalid level"* ]]
 }
 
 @test "log_raw validates color parameter" {
-    run log_raw "INFO" "INVALID" "NONE" 0 "test message"
+    run bash -c 'source common-logging-functions.sh; log_raw "INFO" "INVALID" "NONE" 0 "test message"'
     [ "$status" -eq 1 ]
     [[ "$output" == *"Invalid color"* ]]
 }
 
 @test "log_raw validates indent parameter" {
-    run log_raw "INFO" "NONE" "NONE" "abc" "test message"
+    run bash -c 'source common-logging-functions.sh; log_raw "INFO" "NONE" "NONE" "abc" "test message"'
     [ "$status" -eq 1 ]
     [[ "$output" == *"Invalid indent value"* ]]
 }
 
 @test "log_raw accepts empty message" {
-    run log_raw "INFO" "NONE" "NONE" 0 ""
+    run bash -c 'source common-logging-functions.sh; log_raw "INFO" "NONE" "NONE" 0 ""'
     [ "$status" -eq 0 ]
 }
 
 @test "log_raw accepts custom icon text" {
-    run log_raw "INFO" "NONE" "CUSTOM_ICON" 0 "test message"
+    run bash -c 'source common-logging-functions.sh; log_raw "INFO" "NONE" "CUSTOM_ICON" 0 "test message"'
     [ "$status" -eq 0 ]
 }
 
 @test "log_success increments SUCCESS counter" {
-    initial=$(get_counter "SUCCESS" "test")
-    log_success "Test success message" >/dev/null 2>&1
-    final=$(get_counter "SUCCESS" "test")
-    [ "$final" -eq $((initial + 1)) ]
+    run bash -c 'source common-logging-functions.sh; init_log_counters "test"; initial=$(get_counter "SUCCESS" "test"); log_success "Test success message" >/dev/null 2>&1; final=$(get_counter "SUCCESS" "test"); echo "$((final - initial))"'
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 1 ]
 }
 
 @test "log_warn increments WARN counter" {
-    initial=$(get_counter "WARN" "test")
-    log_warn "Test warning message" >/dev/null 2>&1
-    final=$(get_counter "WARN" "test")
-    [ "$final" -eq $((initial + 1)) ]
+    run bash -c 'source common-logging-functions.sh; init_log_counters "test"; initial=$(get_counter "WARN" "test"); log_warn "Test warning message" >/dev/null 2>&1; final=$(get_counter "WARN" "test"); echo "$((final - initial))"'
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 1 ]
 }
 
 @test "log_error increments ERROR counter" {
-    initial=$(get_counter "ERROR" "test")
-    log_error "Test error message" >/dev/null 2>&1
-    final=$(get_counter "ERROR" "test")
-    [ "$final" -eq $((initial + 1)) ]
+    run bash -c 'source common-logging-functions.sh; init_log_counters "test"; initial=$(get_counter "ERROR" "test"); log_error "Test error message" >/dev/null 2>&1; final=$(get_counter "ERROR" "test"); echo "$((final - initial))"'
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 1 ]
 }
 
 #=============================================================================
@@ -305,20 +309,12 @@ teardown() {
 #=============================================================================
 
 @test "logging functions work with indentation" {
-    push_indent 4
-    # Test that functions run without error when indented
-    run log_info "Indented message"
+    run bash -c 'source common-logging-functions.sh; push_indent 4; log_info "Indented message"'
     [ "$status" -eq 0 ]
-    pop_indent 4
 }
 
 @test "print_count_summary shows correct counts" {
-    increment_counter "SUCCESS" "test"
-    increment_counter "SUCCESS" "test"
-    increment_counter "WARN" "test"
-    
-    # Capture output (redirect to avoid cluttering test output)
-    run print_count_summary "INFO" 50
+    run bash -c 'source common-logging-functions.sh; init_log_counters "test"; increment_counter "SUCCESS" "test"; increment_counter "SUCCESS" "test"; increment_counter "WARN" "test"; print_count_summary "INFO" 50'
     [ "$status" -eq 0 ]
     # Check that output contains the expected counts
     [[ "$output" == *"Total successes:  2"* ]]
@@ -327,19 +323,14 @@ teardown() {
 }
 
 @test "environment variables are respected" {
-    export COMMON_LOG_STD_LEVEL="ERROR"
-    # This should validate the environment variable
-    run log_raw "INFO" "NONE" "NONE" 0 "test message"
+    run bash -c 'export COMMON_LOG_STD_LEVEL="ERROR"; source common-logging-functions.sh; log_raw "INFO" "NONE" "NONE" 0 "test message"'
     [ "$status" -eq 0 ]
-    unset COMMON_LOG_STD_LEVEL
 }
 
 @test "invalid environment variables are caught" {
-    export COMMON_LOG_STD_LEVEL="INVALID"
-    run log_raw "INFO" "NONE" "NONE" 0 "test message"
+    run bash -c 'export COMMON_LOG_STD_LEVEL="INVALID"; source common-logging-functions.sh; log_raw "INFO" "NONE" "NONE" 0 "test message"'
     [ "$status" -eq 1 ]
     [[ "$output" == *"Invalid COMMON_LOG_STD_LEVEL"* ]]
-    unset COMMON_LOG_STD_LEVEL
 }
 
 #=============================================================================
@@ -362,28 +353,39 @@ teardown() {
 }
 
 @test "multiple namespaces work independently" {
-    init_log_counters "namespace1"
-    init_log_counters "namespace2"
+    run bash -c 'source common-logging-functions.sh; 
+        init_log_counters "ns1"; 
+        init_log_counters "ns2"; 
+        increment_counter "SUCCESS" "ns1"; 
+        increment_counter "SUCCESS" "ns1"; 
+        increment_counter "SUCCESS" "ns2"; 
+        echo "NS1:$(get_counter "SUCCESS" "ns1") NS2:$(get_counter "SUCCESS" "ns2")"'
     
-    increment_counter "SUCCESS" "namespace1"
-    increment_counter "SUCCESS" "namespace1"
-    increment_counter "SUCCESS" "namespace2"
-    
-    count1=$(get_counter "SUCCESS" "namespace1")
-    count2=$(get_counter "SUCCESS" "namespace2")
-    
-    [ "$count1" -eq 2 ]
-    [ "$count2" -eq 1 ]
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"NS1:2"* ]]
+    [[ "$output" == *"NS2:1"* ]]
 }
 
 @test "functions work with special characters in messages" {
-    run log_info "Message with special chars: !@#$%^&*()[]{}|;:,.<>?"
+    run bash -c 'source common-logging-functions.sh; log_info "Message with special chars: !@#$%^&*()[]{}|;:,.<>?"'
     [ "$status" -eq 0 ]
 }
 
 @test "functions work with unicode characters" {
-    run log_info "Unicode test: ✅ ⚠️ ❌ 🔧"
+    run bash -c 'source common-logging-functions.sh; log_info "Unicode test: ✅ ⚠️ ❌ 🔧"'
     [ "$status" -eq 0 ]
+}
+
+#=============================================================================
+# INTEGRATION TESTS (Real-world usage patterns)
+#=============================================================================
+
+
+@test "real-world workflow: init -> log -> summary" {
+    run bash -c 'source common-logging-functions.sh; init_log_counters "app"; log_success "OK"; log_warn "Warning"; print_count_summary'
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Total successes:  1"* ]]
+    [[ "$output" == *"Total warnings:   1"* ]]
 }
 
 #=============================================================================
@@ -391,37 +393,33 @@ teardown() {
 #=============================================================================
 
 @test "log levels are case-insensitive" {
-    run log_raw "info" "none" "none" 0 "test message"
+    run bash -c 'source common-logging-functions.sh; log_raw "info" "none" "none" 0 "test message"'
     [ "$status" -eq 0 ]
-    run log_raw "INFO" "NONE" "NONE" 0 "test message"
+    run bash -c 'source common-logging-functions.sh; log_raw "INFO" "NONE" "NONE" 0 "test message"'
     [ "$status" -eq 0 ]
-    run log_raw "Info" "None" "None" 0 "test message"
+    run bash -c 'source common-logging-functions.sh; log_raw "Info" "None" "None" 0 "test message"'
     [ "$status" -eq 0 ]
 }
 
 @test "environment log levels are case-insensitive" {
-    export COMMON_LOG_STD_LEVEL="info"
-    run log_raw "INFO" "NONE" "NONE" 0 "test message"
+    run bash -c 'export COMMON_LOG_STD_LEVEL="info"; source common-logging-functions.sh; log_raw "INFO" "NONE" "NONE" 0 "test message"'
     [ "$status" -eq 0 ]
-    unset COMMON_LOG_STD_LEVEL
     
-    export COMMON_LOG_FILE_LEVEL="debug"
-    run log_raw "INFO" "NONE" "NONE" 0 "test message"
+    run bash -c 'export COMMON_LOG_FILE_LEVEL="debug"; source common-logging-functions.sh; log_raw "INFO" "NONE" "NONE" 0 "test message"'
     [ "$status" -eq 0 ]
-    unset COMMON_LOG_FILE_LEVEL
 }
 
 @test "log_note function works" {
-    run log_note "Test note message"
+    run bash -c 'source common-logging-functions.sh; log_note "Test note message"'
     [ "$status" -eq 0 ]
 }
 
 @test "SUCCESS log level works" {
-    run log_raw "SUCCESS" "GREEN" "SUCCESS" 0 "test success"
+    run bash -c 'source common-logging-functions.sh; log_raw "SUCCESS" "GREEN" "SUCCESS" 0 "test success"'
     [ "$status" -eq 0 ]
 }
 
 @test "NOTE log level works" {
-    run log_raw "NOTE" "NONE" "NONE" 0 "test note"
+    run bash -c 'source common-logging-functions.sh; log_raw "NOTE" "NONE" "NONE" 0 "test note"'
     [ "$status" -eq 0 ]
 }

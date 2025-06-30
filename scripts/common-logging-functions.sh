@@ -21,7 +21,7 @@
 #   - COMMON_LOG_LINE_WIDTH: Width of the log lines (default: 110)
 #   - COMMON_LOG_COUNTER_NAMESPACE: Namespace for log counters (default: "default")
 #############################################################################################################
-set -uo pipefail;
+set -o pipefail;
 
 # Prevent multiple sourcing of this file
 if [[ -n "${COMMON_LOGGING_FUNCTIONS_LOADED:-}" ]]; then
@@ -192,10 +192,12 @@ reset_log_counters() {
 
     init_log_counters "$namespace"
 
-    # Make sure the counters are reset
+    # Make sure the counters are reset (safe under set -u)
+    set +u
     __COMMON_LOG_COUNTERS__["${namespace}_ERROR"]=0
     __COMMON_LOG_COUNTERS__["${namespace}_WARN"]=0
     __COMMON_LOG_COUNTERS__["${namespace}_SUCCESS"]=0
+    set -u
 
 }
 
@@ -249,7 +251,7 @@ get_counter() {
 # Returns: 0 on success, 1 on validation error
 increment_counter() {
     local type="$1"
-    local namespace="${2:-${COMMON_LOG_COUNTER_NAMESPACE:-${__COMMON_LOG_COUNTER_NAMESPACE_DEFAULT__}}}"
+    local namespace="${2:-$(get_counter_namespace)}"
     
     # Validate that type is provided
     if [[ -z "${type}" ]]; then
@@ -294,9 +296,9 @@ log_raw() {
         return 1
     fi
 
-    local level_name="${1^^}";
-    local color_name="${2^^}";
-    local icon_name="${3^^}";
+    local level_name="$(echo "${1}" | tr '[:lower:]' '[:upper:]')";
+    local color_name="$(echo "${2}" | tr '[:lower:]' '[:upper:]')";
+    local icon_name="$(echo "${3}" | tr '[:lower:]' '[:upper:]')";
     local indent_value="${4}";
 
     # Validate level parameter
@@ -340,7 +342,7 @@ log_raw() {
   
     # Determine the required logging level for the screen
     local std_level_name="${COMMON_LOG_STD_LEVEL:-NOTE}";
-    std_level_name="${std_level_name^^}";
+    std_level_name="$(echo "${std_level_name}" | tr '[:lower:]' '[:upper:]')";
     if [[ ! -v __COMMON_LOG_LEVELS__["${std_level_name}"] ]]; then
         echo "ERROR: Invalid COMMON_LOG_STD_LEVEL '${std_level_name}'. Valid values are: DEBUG, NOTE, INFO, SUCCESS, WARN, ERROR" >&2
         return 1
@@ -348,7 +350,7 @@ log_raw() {
 
     # Determine the required logging level for the file
     local file_level_name="${COMMON_LOG_FILE_LEVEL:-DEBUG}";
-    file_level_name="${file_level_name^^}";
+    file_level_name="$(echo "${file_level_name}" | tr '[:lower:]' '[:upper:]')";
     if [[ ! -v __COMMON_LOG_LEVELS__["${file_level_name}"] ]]; then
         echo "ERROR: Invalid COMMON_LOG_FILE_LEVEL '${file_level_name}'. Valid values are: DEBUG, NOTE, INFO, SUCCESS, WARN, ERROR" >&2
         return 1

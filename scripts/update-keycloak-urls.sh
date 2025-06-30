@@ -21,7 +21,7 @@ check_urls_environment() {
         "KC_BOOTSTRAP_ADMIN_USERNAME" 
         "KC_BOOTSTRAP_ADMIN_PASSWORD" 
     )
-    checkEnvironmentVariables $REQUIRED_ENV_VARS
+    checkEnvironmentVariables REQUIRED_ENV_VARS
 }
 
 get_client_config() {
@@ -70,30 +70,30 @@ add_urls_to_array() {
 
 # Update UK ESOS API client
 update_uk_esos_api_client() {
-    print_info "Updating uk-esos-app-api client in uk-esos realm..."
+    log_info "Updating uk-esos-app-api client in uk-esos realm..."
     
     local client_id="uk-esos-app-api"
     local realm="uk-esos"
     
-    print_info "Fetching current client configuration..."
+    log_info "Fetching current client configuration..."
     local client_config=$(get_client_config "$realm" "$client_id")
     
     if [ "$client_config" = "null" ] || [ -z "$client_config" ]; then
-        print_error "Client '$client_id' not found in realm '$realm'" "${LOG_NAMESPACE}"
+        log_error "Client '$client_id' not found in realm '$realm'"
         return 1
     fi
     
     local client_uuid=$(echo "$client_config" | jq -r '.id')
     local client_name=$(echo "$client_config" | jq -r '.clientId')
     
-    print_note "Found client: $client_name (UUID: $client_uuid)"
+    log_note "Found client: $client_name (UUID: $client_uuid)"
     
     # Current URLs
     local current_redirect_uris=$(echo "$client_config" | jq '.redirectUris // []')
     local current_web_origins=$(echo "$client_config" | jq '.webOrigins // []')
     
-    print_note "Current redirect URIs: $(echo "$current_redirect_uris" | jq -c .)"
-    print_note "Current web origins: $(echo "$current_web_origins" | jq -c .)"
+    log_note "Current redirect URIs: $(echo "$current_redirect_uris" | jq -c .)"
+    log_note "Current web origins: $(echo "$current_web_origins" | jq -c .)"
     
     # Define new URLs to add
     local new_redirect_uris=(
@@ -114,8 +114,8 @@ update_uk_esos_api_client() {
     local updated_redirect_uris=$(add_urls_to_array "$current_redirect_uris" "${new_redirect_uris[@]}")
     local updated_web_origins=$(add_urls_to_array "$current_web_origins" "${new_web_origins[@]}")
     
-    print_note "Updated redirect URIs: $(echo "$updated_redirect_uris" | jq -c .)"
-    print_note "Updated web origins: $(echo "$updated_web_origins" | jq -c .)"
+    log_note "Updated redirect URIs: $(echo "$updated_redirect_uris" | jq -c .)"
+    log_note "Updated web origins: $(echo "$updated_web_origins" | jq -c .)"
     
     # Create updated client configuration
     local updated_config=$(echo "$client_config" | jq \
@@ -124,11 +124,11 @@ update_uk_esos_api_client() {
         '.redirectUris = $redirectUris | .webOrigins = $webOrigins')
     
     # Update the client
-    print_info "Updating client configuration..."
+    log_info "Updating client configuration..."
     if update_client_config "$realm" "$client_uuid" "$updated_config"; then
-        print_success "Successfully updated $client_id client" "${LOG_NAMESPACE}"
+        log_success "Successfully updated $client_id client"
     else
-        print_error "Failed to update $client_id client" "${LOG_NAMESPACE}"
+        log_error "Failed to update $client_id client"
         return 1
     fi
     
@@ -137,30 +137,30 @@ update_uk_esos_api_client() {
 
 # Update Camunda Identity Service client
 update_camunda_identity_client() {
-    print_info "Updating camunda-identity-service client in master realm..."
+    log_info "Updating camunda-identity-service client in master realm..."
     
     local client_id="camunda-identity-service"
     local realm="master"
     
-    print_info "Fetching current client configuration..."
+    log_info "Fetching current client configuration..."
     local client_config=$(get_client_config "$realm" "$client_id")
     
     if [ "$client_config" = "null" ] || [ -z "$client_config" ]; then
-        print_error "Client '$client_id' not found in realm '$realm'" "${LOG_NAMESPACE}"
+        log_error "Client '$client_id' not found in realm '$realm'"
         return 1
     fi
     
     local client_uuid=$(echo "$client_config" | jq -r '.id')
     local client_name=$(echo "$client_config" | jq -r '.clientId')
     
-    print_note "Found client: $client_name (UUID: $client_uuid)"
+    log_note "Found client: $client_name (UUID: $client_uuid)"
     
     # Current URLs
     local current_redirect_uris=$(echo "$client_config" | jq '.redirectUris // []')
     local current_web_origins=$(echo "$client_config" | jq '.webOrigins // []')
     
-    print_note "Current redirect URIs: $(echo "$current_redirect_uris" | jq -c .)"
-    print_note "Current web origins: $(echo "$current_web_origins" | jq -c .)"
+    log_note "Current redirect URIs: $(echo "$current_redirect_uris" | jq -c .)"
+    log_note "Current web origins: $(echo "$current_web_origins" | jq -c .)"
     
     # Define new URLs to add
     local new_redirect_uris=(
@@ -181,8 +181,8 @@ update_camunda_identity_client() {
     local updated_redirect_uris=$(add_urls_to_array "$current_redirect_uris" "${new_redirect_uris[@]}")
     local updated_web_origins=$(add_urls_to_array "$current_web_origins" "${new_web_origins[@]}")
     
-    print_note "Updated redirect URIs: $(echo "$updated_redirect_uris" | jq -c .)"
-    print_note "Updated web origins: $(echo "$updated_web_origins" | jq -c .)"
+    log_note "Updated redirect URIs: $(echo "$updated_redirect_uris" | jq -c .)"
+    log_note "Updated web origins: $(echo "$updated_web_origins" | jq -c .)"
     
     # Create updated client configuration
     local updated_config=$(echo "$client_config" | jq \
@@ -191,11 +191,11 @@ update_camunda_identity_client() {
         '.redirectUris = $redirectUris | .webOrigins = $webOrigins')
     
     # Update the client
-    print_info "Updating client configuration..."
+    log_info "Updating client configuration..."
     if update_client_config "$realm" "$client_uuid" "$updated_config"; then
-        print_success "Successfully updated $client_id client" "${LOG_NAMESPACE}"
+        log_success "Successfully updated $client_id client"
     else
-        print_error "Failed to update $client_id client" "${LOG_NAMESPACE}"
+        log_error "Failed to update $client_id client"
         return 1
     fi
     
@@ -207,7 +207,7 @@ verify_updates() {
     print_section "Verifying client updates"
     
     # Verify UK ESOS API client
-    print_info "Verifying uk-esos-app-api client..."
+    log_info "Verifying uk-esos-app-api client..."
     local uk_esos_config=$(get_client_config "uk-esos" "uk-esos-app-api")
     local uk_esos_redirects=$(echo "$uk_esos_config" | jq -r '.redirectUris[]?' | sort)
     local uk_esos_origins=$(echo "$uk_esos_config" | jq -r '.webOrigins[]?' | sort)
@@ -219,7 +219,7 @@ verify_updates() {
     echo ""
     
     # Verify Camunda client
-    print_info "Verifying camunda-identity-service client..."
+    log_info "Verifying camunda-identity-service client..."
     local camunda_config=$(get_client_config "master" "camunda-identity-service")
     local camunda_redirects=$(echo "$camunda_config" | jq -r '.redirectUris[]?' | sort)
     local camunda_origins=$(echo "$camunda_config" | jq -r '.webOrigins[]?' | sort)
@@ -236,13 +236,13 @@ run_keycloak_urls_update() {
     print_section "Updating Keycloak Client URLs and CORS settings"
 
     # Obtain an access token for Keycloak admin operations
-    print_info "Getting Keycloak admin access token..."
+    log_info "Getting Keycloak admin access token..."
     KEYCLOAK_ADMIN_ACCESS_TOKEN=$(getKeycloakAdminAccessToken)
     if [ -z "$KEYCLOAK_ADMIN_ACCESS_TOKEN" ]; then
-        print_error "Failed to obtain Keycloak admin access token" "${LOG_NAMESPACE}"
+        log_error "Failed to obtain Keycloak admin access token"
         return 1
     fi
-    print_success "Successfully obtained admin token" "${LOG_NAMESPACE}"
+    log_success "Successfully obtained admin token"
     echo ""
 
     update_uk_esos_api_client

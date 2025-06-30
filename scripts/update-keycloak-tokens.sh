@@ -21,7 +21,7 @@ check_tokens_environment() {
         "KC_BOOTSTRAP_ADMIN_USERNAME" 
         "KC_BOOTSTRAP_ADMIN_PASSWORD" 
     )
-    checkEnvironmentVariables $REQUIRED_ENV_VARS
+    checkEnvironmentVariables REQUIRED_ENV_VARS
 }
 
 # Main function for token updates
@@ -29,27 +29,27 @@ run_keycloak_tokens_update() {
     print_section "Updating Keycloak Token Settings"
 
     # Obtain an access token for Keycloak admin operations
-    print_info "Getting Keycloak admin access token..."
+    log_info "Getting Keycloak admin access token..."
     KEYCLOAK_ADMIN_ACCESS_TOKEN=$(getKeycloakAdminAccessToken)
     if [ -z "$KEYCLOAK_ADMIN_ACCESS_TOKEN" ]; then
-        print_error "Failed to obtain Keycloak admin access token" "${LOG_NAMESPACE}"
+        log_error "Failed to obtain Keycloak admin access token"
         return 1
     fi
-    print_success "Successfully obtained admin token" "${LOG_NAMESPACE}"
+    log_success "Successfully obtained admin token"
     echo ""
 
     # Get current realm configuration
-    print_info "Getting current realm settings..."
+    log_info "Getting current realm settings..."
     CURRENT_CONFIG=$(curl -s -X GET "${KC_BASE_URL}/admin/realms/${API_KEYCLOAK_REALM}" \
       -H "Authorization: Bearer ${KEYCLOAK_ADMIN_ACCESS_TOKEN}" \
       -H "Content-Type: application/json")
 
     if [ -z "$CURRENT_CONFIG" ]; then
-        print_error "Failed to get realm configuration" "${LOG_NAMESPACE}"
+        log_error "Failed to get realm configuration"
         return 1
     fi
 
-    print_success "Retrieved current realm settings" "${LOG_NAMESPACE}"
+    log_success "Retrieved current realm settings"
     echo ""
 
     # Extract current values
@@ -59,13 +59,13 @@ run_keycloak_tokens_update() {
     CURRENT_OFFLINE_SESSION_IDLE=$(echo "$CURRENT_CONFIG" | jq -r '.offlineSessionIdleTimeout // "null"')
     CURRENT_REFRESH_TOKEN_MAX_REUSE=$(echo "$CURRENT_CONFIG" | jq -r '.refreshTokenMaxReuse // "null"')
 
-    print_note "Current Settings:"
-    print_note "  Access Token Lifespan: $CURRENT_ACCESS_TOKEN_LIFESPAN seconds"
-    print_note "  SSO Session Idle: $CURRENT_SSO_SESSION_IDLE seconds"
-    print_note "  SSO Session Max: $CURRENT_SSO_SESSION_MAX seconds"
-    print_note "  Offline Session Idle: $CURRENT_OFFLINE_SESSION_IDLE seconds"
-    print_note "  Refresh Token Max Reuse: $CURRENT_REFRESH_TOKEN_MAX_REUSE"
-    print_note ""
+    log_note "Current Settings:"
+    log_note "  Access Token Lifespan: $CURRENT_ACCESS_TOKEN_LIFESPAN seconds"
+    log_note "  SSO Session Idle: $CURRENT_SSO_SESSION_IDLE seconds"
+    log_note "  SSO Session Max: $CURRENT_SSO_SESSION_MAX seconds"
+    log_note "  Offline Session Idle: $CURRENT_OFFLINE_SESSION_IDLE seconds"
+    log_note "  Refresh Token Max Reuse: $CURRENT_REFRESH_TOKEN_MAX_REUSE"
+    log_note ""
 
     # Recommended development values (in seconds)
     ACCESS_TOKEN_LIFESPAN=14400        # 4 hours (4 * 60 * 60)
@@ -74,13 +74,13 @@ run_keycloak_tokens_update() {
     OFFLINE_SESSION_IDLE=2592000       # 30 days (30 * 24 * 60 * 60)
     REFRESH_TOKEN_MAX_REUSE=0          # 0 = unlimited reuse
 
-    print_note "New Settings:"
-    print_note "  Access Token Lifespan: $ACCESS_TOKEN_LIFESPAN seconds (4 hours)"
-    print_note "  SSO Session Idle: $SSO_SESSION_IDLE seconds (8 hours)"
-    print_note "  SSO Session Max: $SSO_SESSION_MAX seconds (12 hours)"
-    print_note "  Offline Session Idle: $OFFLINE_SESSION_IDLE seconds (30 days)"
-    print_note "  Refresh Token Max Reuse: $REFRESH_TOKEN_MAX_REUSE (unlimited)"
-    print_note ""
+    log_note "New Settings:"
+    log_note "  Access Token Lifespan: $ACCESS_TOKEN_LIFESPAN seconds (4 hours)"
+    log_note "  SSO Session Idle: $SSO_SESSION_IDLE seconds (8 hours)"
+    log_note "  SSO Session Max: $SSO_SESSION_MAX seconds (12 hours)"
+    log_note "  Offline Session Idle: $OFFLINE_SESSION_IDLE seconds (30 days)"
+    log_note "  Refresh Token Max Reuse: $REFRESH_TOKEN_MAX_REUSE (unlimited)"
+    log_note ""
 
     # Create updated configuration
     UPDATED_CONFIG=$(echo "$CURRENT_CONFIG" | jq \
@@ -95,7 +95,7 @@ run_keycloak_tokens_update() {
        .offlineSessionIdleTimeout = ($offlineSessionIdleTimeout | tonumber) |
        .refreshTokenMaxReuse = ($refreshTokenMaxReuse | tonumber)')
 
-    print_info "Changing token settings to developer friendly settings..."
+    log_info "Changing token settings to developer friendly settings..."
     UPDATE_RESPONSE=$(curl -s -w "%{http_code}" -X PUT "${KC_BASE_URL}/admin/realms/${API_KEYCLOAK_REALM}" \
       -H "Authorization: Bearer ${KEYCLOAK_ADMIN_ACCESS_TOKEN}" \
       -H "Content-Type: application/json" \
@@ -103,12 +103,12 @@ run_keycloak_tokens_update() {
 
     HTTP_CODE="${UPDATE_RESPONSE: -3}"
     if [ "$HTTP_CODE" != "204" ]; then
-        print_error "Failed to update realm settings (HTTP $HTTP_CODE)" "${LOG_NAMESPACE}"
-        print_note "Response: ${UPDATE_RESPONSE%???}"
+        log_error "Failed to update realm settings (HTTP $HTTP_CODE)"
+        log_note "Response: ${UPDATE_RESPONSE%???}"
         return 1
     fi
 
-    print_success "Successfully updated realm token lifespans!" "${LOG_NAMESPACE}"
+    log_success "Successfully updated realm token lifespans!"
     echo ""
 }
 

@@ -478,20 +478,54 @@ create_regulator_user() {
     local phone_number="${10}"
     
     log_note "Creating regulator user via API..."
-    # log_debug "Using API URL: $API_APPLICATION_API_URL"
+    log_debug "Creating regulator with role: $role"
     
     if [[ -z "$API_APPLICATION_API_URL" ]]; then
         log_error "API_APPLICATION_API_URL environment variable is not set"
         return 1
     fi
     
-    # Create invitation request JSON
+    # Determine permissions based on role
+    local manage_users="NONE"
+    local assign_tasks="NONE" 
+    local review_account="NONE"
+    
+    case "$role" in
+        "ca_super_user"|"service_super_user")
+            manage_users="EXECUTE"
+            assign_tasks="EXECUTE"
+            review_account="EXECUTE"
+            ;;
+        "regulator_team_leader"|"regulator_technical_officer")
+            manage_users="NONE"
+            assign_tasks="EXECUTE"
+            review_account="EXECUTE"
+            ;;
+        "regulator_admin_team")
+            manage_users="NONE"
+            assign_tasks="EXECUTE"
+            review_account="VIEW_ONLY"
+            ;;
+        *)
+            log_warn "Unknown regulator role '$role', using minimal permissions"
+            manage_users="NONE"
+            assign_tasks="NONE"
+            review_account="VIEW_ONLY"
+            ;;
+    esac
+    
+    log_debug "Role permissions: MANAGE_USERS_AND_CONTACTS=$manage_users, ASSIGN_REASSIGN_TASKS=$assign_tasks, REVIEW_ORGANISATION_ACCOUNT=$review_account"
+    
+    # Create invitation request JSON with role-based permissions
     local invitation_data=$(jq -n \
         --arg email "$email" \
         --arg firstName "$first_name" \
         --arg lastName "$last_name" \
         --arg jobTitle "$job_title" \
         --arg phoneNumber "$phone_country_code$phone_number" \
+        --arg manageUsers "$manage_users" \
+        --arg assignTasks "$assign_tasks" \
+        --arg reviewAccount "$review_account" \
         '{
             "email": $email,
             "firstName": $firstName,
@@ -500,9 +534,9 @@ create_regulator_user() {
             "phoneNumber": $phoneNumber,
             "mobileNumber": "",
             "permissions": {
-                "MANAGE_USERS_AND_CONTACTS": "NONE",
-                "ASSIGN_REASSIGN_TASKS": "NONE",
-                "REVIEW_ORGANISATION_ACCOUNT": "VIEW_ONLY"
+                "MANAGE_USERS_AND_CONTACTS": $manageUsers,
+                "ASSIGN_REASSIGN_TASKS": $assignTasks,
+                "REVIEW_ORGANISATION_ACCOUNT": $reviewAccount
             }
         }')
     
@@ -628,6 +662,18 @@ create_regulator_user() {
         local enable_response_body="${enable_response%???}"
         
         if [[ "$enable_http_code" == "204" ]]; then
+            log_note "Setting authority status to ACTIVE..."
+            
+            # Update au_authority status to ACTIVE to complete the registration
+            local update_result=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
+                "UPDATE au_authority SET status = 'ACTIVE' WHERE user_id = '$keycloak_user_id' AND status = 'ACCEPTED';" 2>/dev/null)
+            
+            if [[ $? -eq 0 ]]; then
+                log_debug "Authority status updated to ACTIVE"
+            else
+                log_warn "Failed to update authority status to ACTIVE - user may need manual activation"
+            fi
+            
             log_success "Regulator user registration completed successfully!"
             log_note "User details:"
             log_note "  Email: $email"

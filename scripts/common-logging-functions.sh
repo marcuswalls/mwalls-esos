@@ -278,6 +278,44 @@ increment_counter() {
     set -u
 }
 
+# Check if DEBUG logging is enabled for either standard output or file output
+# Returns: 0 if DEBUG is enabled, 1 if not enabled
+# Note: Returns shell exit codes (0=true/success, 1=false/failure) not echo values
+is_debug_enabled() {
+    # Get the configured logging levels with defaults
+    local std_level_name="${COMMON_LOG_STD_LEVEL:-NOTE}"
+    local file_level_name="${COMMON_LOG_FILE_LEVEL:-DEBUG}"
+    local file_enabled="${COMMON_LOG_FILE_ENABLED:-0}"
+    
+    # Normalize to uppercase
+    std_level_name="$(echo "${std_level_name}" | tr '[:lower:]' '[:upper:]')"
+    file_level_name="$(echo "${file_level_name}" | tr '[:lower:]' '[:upper:]')"
+    
+    # Validate levels exist
+    if [[ ! -v __COMMON_LOG_LEVELS__["${std_level_name}"] ]]; then
+        std_level_name="NOTE"  # Fallback to default
+    fi
+    if [[ ! -v __COMMON_LOG_LEVELS__["${file_level_name}"] ]]; then
+        file_level_name="DEBUG"  # Fallback to default
+    fi
+    
+    # Get numeric values for comparison
+    local debug_level_num="${__COMMON_LOG_LEVELS__[DEBUG]}"
+    local std_level_num="${__COMMON_LOG_LEVELS__[${std_level_name}]}"
+    local file_level_num="${__COMMON_LOG_LEVELS__[${file_level_name}]}"
+    
+    # Check if DEBUG level would be logged to standard output
+    if [[ "${std_level_num}" -ge "${debug_level_num}" ]]; then
+        return 0  # DEBUG is enabled for standard output
+    fi
+    
+    # Check if DEBUG level would be logged to file (if file logging is enabled)
+    if [[ "${file_enabled}" -eq 1 && "${file_level_num}" -ge "${debug_level_num}" ]]; then
+        return 0  # DEBUG is enabled for file output
+    fi
+    
+    return 1  # DEBUG is not enabled for either output
+}
 
 
 # Low-level logging function with full control over formatting
@@ -582,6 +620,7 @@ export -f reset_log_counters
 export -f increment_counter
 export -f get_counter
 export -f get_counter_namespace
+export -f is_debug_enabled
 
 # Note: Auto-initialization removed to avoid conflicts with test environment
 

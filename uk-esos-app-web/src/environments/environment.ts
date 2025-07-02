@@ -7,7 +7,7 @@ import { KeycloakConfig, KeycloakInitOptions } from 'keycloak-js';
 
 // Add here your keycloak setup infos
 const keycloakConfig: KeycloakConfig = {
-  url: 'http://localhost:8091/auth',
+  url: 'https://host.docker.internal/auth',
   realm: 'uk-esos',
   clientId: 'uk-esos-web-app',
 };
@@ -28,7 +28,7 @@ const keycloakOptions: KeycloakOptions = {
 };
 
 const apiOptions = {
-  baseUrl: '//localhost:8080/api',
+  baseUrl: 'https://host.docker.internal/api',
 };
 
 const timeoutBanner = {

@@ -1,0 +1,13 @@
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install curl 
+RUN apk add --no-cache curl
+
+# Expose port
+EXPOSE 4200
+
+# Start development server with Node.js memory settings to prevent V8 crashes
+CMD ["sh", "-c", "export NODE_OPTIONS='--max-old-space-size=4096' && echo 'Checking dependencies...' && if [ ! -d node_modules ] || [ package.json -nt node_modules ]; then echo 'Installing dependencies...' && yarn install --frozen-lockfile --ignore-scripts; fi && echo 'Checking libraries...' && if [ ! -d dist/govuk-components ] || [ ! -d dist/esos-api ] || [ projects/govuk-components -nt dist/govuk-components ] || [ projects/esos-api -nt dist/esos-api ]; then echo 'Building libraries...' && yarn prebuild; else echo 'Libraries up to date'; fi && echo 'Starting dev server...' && yarn start --host 0.0.0.0"]

@@ -1,7 +1,7 @@
 #https://www.keycloak.org/server/containers
 #https://github.com/keycloak/keycloak/blob/main/quarkus/container/Dockerfile
 
-FROM registry.access.redhat.com/ubi9 AS ubi-micro-build
+FROM almalinux:9 AS ubi-micro-build
 RUN dnf clean all
 RUN dnf update -y
 RUN mkdir -p /mnt/rootfs

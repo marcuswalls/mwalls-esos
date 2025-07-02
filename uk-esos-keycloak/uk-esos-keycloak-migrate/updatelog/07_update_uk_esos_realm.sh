@@ -20,21 +20,9 @@ UPDATE_UK_ESOS_REALM=$(curl -s -L -X PUT "$UPDATE_REALM_URL$UK_ESOS_REALM_NAME" 
 	"displayName": "'$UK_ESOS_REALM_DISPLAY_NAME'"
 }')
 
-if [ -z "UPDATE_UK_ESOS_REALM" ]
+if [ -z "$UPDATE_UK_ESOS_REALM" ]
 then
-	echo " Realm $UK_ESOS_REALM_NAME updated successfully"
+	echo " $SCRIPT_NAME executed successfully"
 else
-	#In case of error during realm creation, print the error and exit in order to avoid successfully loging the script execution
-	echo " $CREATE_REALM"
-	exit;
-fi
-
-#Add script name as user to changelog realm for tracking purposes
-ADD_SCRIPT_TO_CHANGELOG=$(addUserToChangeLogRealm "$SCRIPT_NAME")
-
-if [ -z "$ADD_SCRIPT_TO_CHANGELOG" ]
-then
-	echo " Script $SCRIPT_NAME added to changelog"
-else
-	echo " Script $SCRIPT_NAME was not to added to changelog. Reason: $ADD_SCRIPT_TO_CHANGELOG"
+	echo " $SCRIPT_NAME failed $UPDATE_UK_ESOS_REALM"
 fi

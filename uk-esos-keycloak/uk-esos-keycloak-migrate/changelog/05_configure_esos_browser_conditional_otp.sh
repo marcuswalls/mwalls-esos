@@ -27,11 +27,12 @@ CONDITIONAL_OTP_EXECUTION=$(curl -s -L -X PUT "$UPDATE_REALM_URL$UK_ESOS_REALM_N
 -H "Authorization: Bearer $KEYCLOAK_ADMIN_ACCESS_TOKEN" \
 --data-raw "$CONDITIONAL_OTP_EXECUTION_OBJECT")
 
-if echo "$CONDITIONAL_OTP_EXECUTION" | jq -e '.error' >/dev/null 2>&1;
+# Check if response is non-empty and contains an error
+if [ -n "$CONDITIONAL_OTP_EXECUTION" ] && echo "$CONDITIONAL_OTP_EXECUTION" | jq -e '.error' >/dev/null 2>&1;
 then
 	#In case of error during realm creation, print the error and exit in order to avoid successfully loging the script execution
 	echo " Realm $UK_ESOS_REALM_NAME update failed: $CONDITIONAL_OTP_EXECUTION"
-	exit;
+	exit 1;
 else
 	echo " Realm $UK_ESOS_REALM_NAME updated successfully"
 fi

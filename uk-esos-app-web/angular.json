@@ -99,6 +99,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "allowedHosts": ["localhost", "host.docker.internal"]
+          },
           "configurations": {
             "production": {
               "browserTarget": "uk-esos-main-web:build:production"

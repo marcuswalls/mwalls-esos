@@ -271,6 +271,52 @@ else
 fi
 log_note ""
 
+# Check SSL certificates
+print_section "SSL certificates for development"
+
+# Check if certificate is installed in system trust store
+
+SYSTEM_CERT_INSTALLED=0
+
+# Check in /usr/local/share/ca-certificates/ (where manually added certs go)
+if [ -f "/usr/local/share/ca-certificates/dockerhost-root-ca.crt" ]; then
+    log_note "Found: /usr/local/share/ca-certificates/dockerhost-root-ca.crt"
+    SYSTEM_CERT_INSTALLED=1
+fi
+
+# Check in /etc/ssl/certs/ (where processed certs end up after update-ca-certificates)
+if [ -f "/etc/ssl/certs/dockerhost-root-ca.pem" ]; then
+    log_note "Found: /etc/ssl/certs/dockerhost-root-ca.pem"
+    SYSTEM_CERT_INSTALLED=$((SYSTEM_CERT_INSTALLED + 1))
+fi
+
+# Also check for the certificate hash-named symlink in /etc/ssl/certs/
+if [ -f "/usr/local/share/ca-certificates/dockerhost-root-ca.crt" ]; then
+    CERT_HASH=$(openssl x509 -hash -noout -in "/usr/local/share/ca-certificates/dockerhost-root-ca.crt" 2>/dev/null)
+    if [ -n "$CERT_HASH" ] && [ -L "/etc/ssl/certs/${CERT_HASH}.0" ]; then
+        log_note "Found: /etc/ssl/certs/${CERT_HASH}.0 (certificate hash symlink)"
+        SYSTEM_CERT_INSTALLED=$((SYSTEM_CERT_INSTALLED + 1))
+    fi
+fi
+
+case $SYSTEM_CERT_INSTALLED in
+    0|1)
+        log_error "Certificates for host.docker.internal have not been installed"
+        log_note "  sudo cp /path/to/dockerhost-root-ca.crt /usr/local/share/ca-certificates/dockerhost-root-ca.crt"
+        log_note "  sudo update-ca-certificates"
+        ;;
+    2)
+        log_warn "Certificates for host.docker.internal may not have been fully installed"
+        log_note "  sudo cp /path/to/dockerhost-root-ca.crt /usr/local/share/ca-certificates/dockerhost-root-ca.crt"
+        log_note "  sudo update-ca-certificates"
+        ;;
+    *)
+        log_success "SSL certificates exist for host.docker.internal"
+        ;;
+esac
+
+log_note ""
+
 
 # Print summary using common functions
 print_count_summary

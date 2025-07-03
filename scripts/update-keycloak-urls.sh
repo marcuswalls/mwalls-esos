@@ -28,7 +28,7 @@ get_client_config() {
     local realm="$1"
     local client_id="$2"
     
-    curl -s -X GET "${KC_BASE_URL}/admin/realms/${realm}/clients?clientId=${client_id}" \
+    curl -s -X GET "$(wsl_translate_url "${KC_BASE_URL}/admin/realms/${realm}/clients?clientId=${client_id}")" \
       -H "Authorization: Bearer ${KEYCLOAK_ADMIN_ACCESS_TOKEN}" | \
       jq '.[0]'
 }
@@ -39,7 +39,7 @@ update_client_config() {
     local client_uuid="$2"
     local updated_config="$3"
     
-    local response=$(curl -s -w "%{http_code}" -X PUT "${KC_BASE_URL}/admin/realms/${realm}/clients/${client_uuid}" \
+    local response=$(curl -s -w "%{http_code}" -X PUT "$(wsl_translate_url "${KC_BASE_URL}/admin/realms/${realm}/clients/${client_uuid}")" \
       -H "Authorization: Bearer ${KEYCLOAK_ADMIN_ACCESS_TOKEN}" \
       -H "Content-Type: application/json" \
       -d "$updated_config")

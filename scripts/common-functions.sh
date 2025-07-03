@@ -15,7 +15,7 @@ readonly COMMON_FUNCTIONS_LOADED=1
 # LOGGING FUNCTIONS
 #############################################################################################################
 # Include the new logging functions
-source "$SCRIPT_DIR/common-logging-functions.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/common-logging-functions.sh"
 
 
 #############################################################################################################
@@ -107,6 +107,62 @@ check_environment_variables() {
 export -f check_environment_variables
 
 #############################################################################################################
+# WSL2 NETWORK FUNCTIONS
+#############################################################################################################
+
+# Translate host.docker.internal URLs to localhost for WSL2 compatibility
+# This function handles the corporate firewall issue where WSL2 cannot reach host.docker.internal
+# but can reach localhost on the same ports
+# Usage: wsl_translate_url "https://host.docker.internal/api/endpoint?param=value"
+# Returns: "http://localhost/api/endpoint?param=value"
+wsl_translate_url() {
+    local url="$1"
+    
+    # Validate input
+    if [[ -z "$url" ]]; then
+        log_error "wsl_translate_url: URL parameter is required"
+        return 1
+    fi
+    
+    # Check if URL contains host.docker.internal
+    if [[ "$url" == *"host.docker.internal"* ]]; then
+        # Replace https://host.docker.internal with http://localhost
+        # Replace http://host.docker.internal with http://localhost
+        # Handle optional port numbers (e.g., :443, :80)
+        echo "$url" | sed -E 's|https?://host\.docker\.internal(:[0-9]+)?|http://localhost|g'
+        log_debug "Translated URL from host.docker.internal to localhost: $url"
+    else
+        # Return URL unchanged if it doesn't contain host.docker.internal
+        echo "$url"
+    fi
+}
+export -f wsl_translate_url
+
+# Translate host.docker.internal hostnames to localhost for WSL2 compatibility
+# This function handles the corporate firewall issue where WSL2 cannot reach host.docker.internal
+# but can reach localhost for database connections and other non-HTTP services
+# Usage: wsl_translate_hostname "host.docker.internal" 
+# Returns: "localhost"
+wsl_translate_hostname() {
+    local hostname="$1"
+    
+    # Validate input
+    if [[ -z "$hostname" ]]; then
+        log_error "wsl_translate_hostname: hostname parameter is required"
+        return 1
+    fi
+    
+    # Check if hostname is host.docker.internal
+    if [[ "$hostname" == "host.docker.internal" ]]; then
+        echo "localhost"
+    else
+        # Return hostname unchanged if it's not host.docker.internal
+        echo "$hostname"
+    fi
+}
+export -f wsl_translate_hostname
+
+#############################################################################################################
 # KEYCLOAK FUNCTIONS
 #############################################################################################################
 get_keycloak_admin_access_token() {
@@ -122,7 +178,9 @@ get_keycloak_admin_access_token() {
 	GRANT_TYPE=password
 	RETRIEVE_TOKEN_URL="$KC_BASE_URL/realms/master/protocol/openid-connect/token"
 
-	ACCESS_TOKEN=$(curl -s -L -X POST "$RETRIEVE_TOKEN_URL" \
+	TRANSLATED_URL=$(wsl_translate_url "$RETRIEVE_TOKEN_URL")
+
+	ACCESS_TOKEN=$(curl -s -L -X POST "$TRANSLATED_URL" \
 	-H 'Content-Type: application/x-www-form-urlencoded' \
 	--data-urlencode "client_id=$CLIENT_ID" \
 	--data-urlencode "username=$KC_BOOTSTRAP_ADMIN_USERNAME" \

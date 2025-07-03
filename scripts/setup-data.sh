@@ -48,7 +48,8 @@ main() {
     
     # Check if a row already exists in the TERMS table
     log_debug "Checking for existing terms record in database"
-    local existing_terms=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
+    local db_host=$(wsl_translate_hostname "${API_DB_HOST:-localhost}")
+    local existing_terms=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
         "SELECT COUNT(*) FROM terms" 2>/dev/null | xargs)
     
     if [[ "$existing_terms" -gt 0 ]]; then
@@ -68,7 +69,7 @@ main() {
         RETURNING id;
     "
     
-    local terms_id=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -q -c "$terms_sql" 2>/dev/null | xargs)
+    local terms_id=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -q -c "$terms_sql" 2>/dev/null | xargs)
     
     if [[ -z "$terms_id" || "$terms_id" == "" ]]; then
         log_error "Failed to create terms record in database"

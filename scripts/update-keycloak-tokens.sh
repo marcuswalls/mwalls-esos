@@ -40,7 +40,7 @@ run_keycloak_tokens_update() {
 
     # Get current realm configuration
     log_info "Getting current realm settings..."
-    CURRENT_CONFIG=$(curl -s -X GET "${KC_BASE_URL}/admin/realms/${API_KEYCLOAK_REALM}" \
+    CURRENT_CONFIG=$(curl -s -X GET "$(wsl_translate_url "${KC_BASE_URL}/admin/realms/${API_KEYCLOAK_REALM}")" \
       -H "Authorization: Bearer ${KEYCLOAK_ADMIN_ACCESS_TOKEN}" \
       -H "Content-Type: application/json")
 
@@ -96,7 +96,7 @@ run_keycloak_tokens_update() {
        .refreshTokenMaxReuse = ($refreshTokenMaxReuse | tonumber)')
 
     log_info "Changing token settings to developer friendly settings..."
-    UPDATE_RESPONSE=$(curl -s -w "%{http_code}" -X PUT "${KC_BASE_URL}/admin/realms/${API_KEYCLOAK_REALM}" \
+    UPDATE_RESPONSE=$(curl -s -w "%{http_code}" -X PUT "$(wsl_translate_url "${KC_BASE_URL}/admin/realms/${API_KEYCLOAK_REALM}")" \
       -H "Authorization: Bearer ${KEYCLOAK_ADMIN_ACCESS_TOKEN}" \
       -H "Content-Type: application/json" \
       -d "$UPDATED_CONFIG")

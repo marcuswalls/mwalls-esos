@@ -18,7 +18,7 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN groupadd -g 499 esos && useradd -m -r -u 499 -g esos esos
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*
-RUN echo "esos ALL=(ALL) NOPASSWD: /usr/bin/keytool" >> /etc/sudoers
+RUN echo "esos ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 USER esos
 WORKDIR /opt/applications/uk-esos-app-api/

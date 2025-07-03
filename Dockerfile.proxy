@@ -10,6 +10,7 @@ COPY certs/dockerhost-root-ca.crt /etc/nginx/ssl/
 
 # Copy nginx configuration
 COPY proxy-nginx.conf /etc/nginx/conf.d/default.conf
+COPY proxy-locations.conf /etc/nginx/proxy-locations.conf
 
 # Remove default nginx config
 RUN rm -f /etc/nginx/conf.d/default.conf.bak

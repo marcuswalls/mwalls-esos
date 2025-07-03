@@ -278,7 +278,8 @@ check_or_create_bootstrap_admin() {
     print_section "Checking Bootstrap Admin"
     
     # Check if a super admin already exists in the database
-    local existing_admin=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
+    local db_host=$(wsl_translate_hostname "${API_DB_HOST:-localhost}")
+    local existing_admin=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
         "SELECT COUNT(*) FROM au_authority WHERE code = 'ca_super_user' AND status = 'ACTIVE'" 2>/dev/null | xargs)
     
     if [[ "$existing_admin" -gt 0 ]]; then
@@ -306,7 +307,7 @@ check_or_create_bootstrap_admin() {
     
     # Create user in Keycloak
     local keycloak_user_response=$(curl -s -w "%{http_code}" -X POST \
-        "$KC_BASE_URL/admin/realms/$API_KEYCLOAK_REALM/users" \
+        "$(wsl_translate_url "$KC_BASE_URL/admin/realms/$API_KEYCLOAK_REALM/users")" \
         -H "Authorization: Bearer $admin_token" \
         -H "Content-Type: application/json" \
         -d "{
@@ -331,7 +332,7 @@ check_or_create_bootstrap_admin() {
     
     # Get the created user ID from Keycloak
     local keycloak_user_id=$(curl -s -X GET \
-        "$KC_BASE_URL/admin/realms/$API_KEYCLOAK_REALM/users?username=$bootstrap_email" \
+        "$(wsl_translate_url "$KC_BASE_URL/admin/realms/$API_KEYCLOAK_REALM/users?username=$bootstrap_email")" \
         -H "Authorization: Bearer $admin_token" | jq -r '.[0].id')
     
     if [[ "$keycloak_user_id" == "null" || -z "$keycloak_user_id" ]]; then
@@ -348,7 +349,7 @@ check_or_create_bootstrap_admin() {
         RETURNING id;
     "
     
-    local authority_id=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -q -c "$authority_sql" 2>/dev/null | xargs)
+    local authority_id=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -q -c "$authority_sql" 2>/dev/null | xargs)
     
     if [[ -z "$authority_id" || "$authority_id" == "" ]]; then
         log_error "Failed to create authority record"
@@ -366,9 +367,9 @@ check_or_create_bootstrap_admin() {
         WHERE ar.code = 'ca_super_user';
     "
     
-    PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -c "$permissions_sql"
+    PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -c "$permissions_sql"
     
-    local permissions_count=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
+    local permissions_count=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
         "SELECT COUNT(*) FROM au_authority_permission WHERE authority_id = $authority_id" 2>/dev/null | xargs)
     
     log_debug "Copied $permissions_count permissions to bootstrap admin"
@@ -393,7 +394,7 @@ get_esos_api_token() {
     
     # First, get token from Keycloak using user credentials
     local token_response=$(curl -s -X POST \
-        "$KC_BASE_URL/realms/$API_KEYCLOAK_REALM/protocol/openid-connect/token" \
+        "$(wsl_translate_url "$KC_BASE_URL/realms/$API_KEYCLOAK_REALM/protocol/openid-connect/token")" \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -d "client_id=${ESOS_APP_API_CLIENT_ID}" \
         -d "grant_type=password" \
@@ -548,7 +549,7 @@ create_regulator_user() {
     echo "$invitation_data" > "$temp_file"
     
     # Debug: check if temp file is corrupted when DEBUG logging enabled
-    if [[ "$COMMON_LOG_STD_LEVEL" == "DEBUG" ]]; then
+    if [[ "${COMMON_LOG_STD_LEVEL:-NOTE}" == "DEBUG" ]]; then
         log_debug "Temp file contents:"
         log_debug "$(cat "$temp_file")"
         log_debug "End of temp file"
@@ -561,7 +562,7 @@ create_regulator_user() {
     fi
     
     local response=$(curl -s -w "%{http_code}" -X POST \
-        "$API_APPLICATION_API_URL/v1.0/regulator-users/invite" \
+        "$(wsl_translate_url "$API_APPLICATION_API_URL/v1.0/regulator-users/invite")" \
         -H "Authorization: Bearer $api_token" \
         -F "regulatorInvitedUser=@$temp_file;type=application/json")
     
@@ -590,7 +591,7 @@ create_regulator_user() {
         fi
         
         local keycloak_user_id=$(curl -s -X GET \
-            "$KC_BASE_URL/admin/realms/$API_KEYCLOAK_REALM/users?email=$email" \
+            "$(wsl_translate_url "$KC_BASE_URL/admin/realms/$API_KEYCLOAK_REALM/users?email=$email")" \
             -H "Authorization: Bearer $admin_token" | jq -r '.[0].id // empty')
         
         if [[ -z "$keycloak_user_id" || "$keycloak_user_id" == "null" ]]; then
@@ -602,7 +603,8 @@ create_regulator_user() {
         log_note "Found Keycloak user ID: $keycloak_user_id"
         
         # Now get the authority UUID using the Keycloak user ID
-        local invitation_token=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
+        local db_host=$(wsl_translate_hostname "${API_DB_HOST:-localhost}")
+        local invitation_token=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
             "SELECT uuid FROM au_authority WHERE user_id = '$keycloak_user_id' AND status = 'PENDING' ORDER BY creation_date DESC LIMIT 1;" 2>/dev/null | xargs)
         
         if [[ -z "$invitation_token" || "$invitation_token" == "" ]]; then
@@ -627,7 +629,7 @@ create_regulator_user() {
         # Step 1: Accept invitation using the JWT token
         log_debug "Accepting invitation with JWT token..."
         local accept_response=$(curl -s -w "%{http_code}" -X POST \
-            "$API_APPLICATION_API_URL/v1.0/regulator-users/registration/accept-invitation" \
+            "$(wsl_translate_url "$API_APPLICATION_API_URL/v1.0/regulator-users/registration/accept-invitation")" \
             -H "Content-Type: application/json" \
             -d "{\"token\": \"$jwt_token\"}")
         
@@ -654,7 +656,7 @@ create_regulator_user() {
             }')
         
         local enable_response=$(curl -s -w "%{http_code}" -X PUT \
-            "$API_APPLICATION_API_URL/v1.0/regulator-users/registration/enable-from-invitation" \
+            "$(wsl_translate_url "$API_APPLICATION_API_URL/v1.0/regulator-users/registration/enable-from-invitation")" \
             -H "Content-Type: application/json" \
             -d "$enable_data")
         
@@ -665,7 +667,7 @@ create_regulator_user() {
             log_note "Setting authority status to ACTIVE..."
             
             # Update au_authority status to ACTIVE to complete the registration
-            local update_result=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "${API_DB_HOST:-localhost}" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
+            local update_result=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
                 "UPDATE au_authority SET status = 'ACTIVE' WHERE user_id = '$keycloak_user_id' AND status = 'ACCEPTED';" 2>/dev/null)
             
             if [[ $? -eq 0 ]]; then
@@ -721,7 +723,7 @@ create_operator_user() {
     # Step 2: Verify the token (optional validation step)
     log_debug "Verifying registration token..."
     local verify_response=$(curl -s -w "%{http_code}" -X POST \
-        "$API_APPLICATION_API_URL/v1.0/operator-users/registration/token-verification" \
+        "$(wsl_translate_url "$API_APPLICATION_API_URL/v1.0/operator-users/registration/token-verification")" \
         -H "Content-Type: application/json" \
         -d "{\"token\": \"$jwt_token\"}")
     
@@ -767,7 +769,7 @@ create_operator_user() {
         }')
     
     local registration_response=$(curl -s -w "%{http_code}" -X POST \
-        "$API_APPLICATION_API_URL/v1.0/operator-users/registration/register" \
+        "$(wsl_translate_url "$API_APPLICATION_API_URL/v1.0/operator-users/registration/register")" \
         -H "Content-Type: application/json" \
         -d "$registration_data")
     
@@ -840,7 +842,7 @@ create_verifier_user() {
     log_debug "Request JSON: $invitation_data"
     
     local response=$(curl -s -w "%{http_code}" -X POST \
-        "$API_APPLICATION_API_URL/v1.0/verifier-users/invite" \
+        "$(wsl_translate_url "$API_APPLICATION_API_URL/v1.0/verifier-users/invite")" \
         -H "Authorization: Bearer $api_token" \
         -H "Content-Type: application/json" \
         -d "$invitation_data")

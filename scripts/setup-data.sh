@@ -38,15 +38,10 @@ check_environment() {
     check_environment_variables REQUIRED_ENV_VARS
 }
 
-main() {
-    print_banner "Setting up ESOS Data"
+# Function to setup terms table
+setup_terms() {
+    print_section "Setting up terms table"
     
-    # Check environment variables
-    check_environment
-    
-    print_section "Checking TERMS table"
-    
-    # Check if a row already exists in the TERMS table
     log_debug "Checking for existing terms record in database"
     local db_host=$(wsl_translate_hostname "${API_DB_HOST:-localhost}")
     local existing_terms=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
@@ -55,7 +50,6 @@ main() {
     if [[ "$existing_terms" -gt 0 ]]; then
         log_success "Terms record already exists in database"
         log_debug "Found $existing_terms existing terms records"
-        print_count_summary
         return 0
     fi
     
@@ -73,15 +67,61 @@ main() {
     
     if [[ -z "$terms_id" || "$terms_id" == "" ]]; then
         log_error "Failed to create terms record in database"
-        print_count_summary
-        exit 1
+        return 1
     fi
     
     log_success "Successfully created terms record with ID: $terms_id"
     log_debug "Terms URL: $API_TERMS_URL"
     log_debug "Version: 1"
     
+    return 0
+}
+
+# Function to setup audit triggers
+setup_audit_triggers() {
+    print_section "Setting up audit triggers"
+    
+    log_info "Adding audit triggers to all database tables"
+    local db_host=$(wsl_translate_hostname "${API_DB_HOST:-localhost}")
+    
+    # Call the add_audit_triggers function
+    local result=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
+        "SELECT add_audit_triggers();" 2>/dev/null)
+    
+    if [[ $? -eq 0 ]]; then
+        log_success "Audit triggers successfully added to all tables"
+        log_debug "All database changes will now be logged to the change_log table"
+        return 0
+    else
+        log_error "Failed to add audit triggers to database tables"
+        log_debug "Audit logging may not be available"
+        return 1
+    fi
+}
+
+# Main orchestration function
+main() {
+    print_banner "Setting up ESOS Data"
+
+    # Check environment variables
+    check_environment
+
+    # Setup audit triggers
+    if ! setup_audit_triggers; then
+        log_error "Audit triggers setup failed"
+        return 1;
+    fi
+    
+    # Setup terms table
+    if ! setup_terms; then
+        log_error "Terms setup failed"
+        return 1;
+    fi
+    
+  
+    # Print summary and exit
     print_count_summary
+    return 0;    
 }
 
 # Conditional execution

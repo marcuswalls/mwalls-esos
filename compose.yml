@@ -194,6 +194,7 @@ services:
       - POSTGRES_PASSWORD=${API_DB_PASSWORD}
     volumes:
       - postgres_app:/var/lib/postgresql/data
+      - ./scripts/postgres-change-logging.sql:/docker-entrypoint-initdb.d/postgres-change-logging.sql
     ports:
       - 5433:5432
     healthcheck:

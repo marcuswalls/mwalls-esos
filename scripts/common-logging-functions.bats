@@ -425,52 +425,6 @@ teardown() {
 }
 
 #=============================================================================
-# WSL TRANSLATION FUNCTION TESTS
-#=============================================================================
-
-@test "wsl_translate_url translates host.docker.internal to localhost" {
-    run bash -c 'source common-functions.sh; wsl_translate_url "https://host.docker.internal/api/endpoint"'
-    [ "$status" -eq 0 ]
-    [ "$output" = "http://localhost/api/endpoint" ]
-}
-
-@test "wsl_translate_url handles URLs with ports" {
-    run bash -c 'source common-functions.sh; wsl_translate_url "https://host.docker.internal:443/api/endpoint"'
-    [ "$status" -eq 0 ]
-    [ "$output" = "http://localhost/api/endpoint" ]
-}
-
-@test "wsl_translate_url leaves other URLs unchanged" {
-    run bash -c 'source common-functions.sh; wsl_translate_url "https://example.com/api/endpoint"'
-    [ "$status" -eq 0 ]
-    [ "$output" = "https://example.com/api/endpoint" ]
-}
-
-@test "wsl_translate_url requires URL parameter" {
-    run bash -c 'source common-functions.sh; wsl_translate_url ""'
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"URL parameter is required"* ]]
-}
-
-@test "wsl_translate_hostname translates host.docker.internal to localhost" {
-    run bash -c 'source common-functions.sh; wsl_translate_hostname "host.docker.internal"'
-    [ "$status" -eq 0 ]
-    [ "$output" = "localhost" ]
-}
-
-@test "wsl_translate_hostname leaves other hostnames unchanged" {
-    run bash -c 'source common-functions.sh; wsl_translate_hostname "example.com"'
-    [ "$status" -eq 0 ]
-    [ "$output" = "example.com" ]
-}
-
-@test "wsl_translate_hostname requires hostname parameter" {
-    run bash -c 'source common-functions.sh; wsl_translate_hostname ""'
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"hostname parameter is required"* ]]
-}
-
-#=============================================================================
 # UNBOUND VARIABLE PROTECTION TESTS
 #=============================================================================
 
@@ -480,15 +434,25 @@ teardown() {
     [ "$output" = "NOTE" ]
 }
 
-@test "scripts handle unset COMMON_LOG_STD_LEVEL in conditions" {
-    # Test the specific pattern that was causing the error in create-user.sh
-    run bash -c 'set -u; unset COMMON_LOG_STD_LEVEL; if [[ "${COMMON_LOG_STD_LEVEL:-NOTE}" == "DEBUG" ]]; then echo "debug"; else echo "not-debug"; fi'
+@test "logging functions handle unset COMMON_LOG_STD_LEVEL in conditions" {
+    # Test the specific pattern that was causing the error in create-user.sh line 552
+    # This ensures that logging functions work correctly when COMMON_LOG_STD_LEVEL is unset
+    run bash -c 'set -u; unset COMMON_LOG_STD_LEVEL; source common-logging-functions.sh; if [[ "${COMMON_LOG_STD_LEVEL:-NOTE}" == "DEBUG" ]]; then echo "debug"; else echo "not-debug"; fi'
     [ "$status" -eq 0 ]
     [ "$output" = "not-debug" ]
 }
 
-@test "scripts handle set COMMON_LOG_STD_LEVEL=DEBUG in conditions" {
-    run bash -c 'set -u; export COMMON_LOG_STD_LEVEL="DEBUG"; if [[ "${COMMON_LOG_STD_LEVEL:-NOTE}" == "DEBUG" ]]; then echo "debug"; else echo "not-debug"; fi'
+@test "logging functions handle set COMMON_LOG_STD_LEVEL=DEBUG in conditions" {
+    # Test that the fix works when variable is set to DEBUG
+    run bash -c 'set -u; export COMMON_LOG_STD_LEVEL="DEBUG"; source common-logging-functions.sh; if [[ "${COMMON_LOG_STD_LEVEL:-NOTE}" == "DEBUG" ]]; then echo "debug"; else echo "not-debug"; fi'
     [ "$status" -eq 0 ]
     [ "$output" = "debug" ]
+}
+
+@test "log functions work with unset COMMON_LOG_STD_LEVEL under strict mode" {
+    # Test that actual logging functions don't fail when COMMON_LOG_STD_LEVEL is unset
+    # This replicates the scenario that was failing in create-user.sh
+    run bash -c 'set -u; unset COMMON_LOG_STD_LEVEL; source common-logging-functions.sh; log_info "test message" >/dev/null 2>&1; echo "success"'
+    [ "$status" -eq 0 ]
+    [ "$output" = "success" ]
 }

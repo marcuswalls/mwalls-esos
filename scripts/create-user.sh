@@ -196,8 +196,6 @@ validate_parameters() {
         log_error "Invalid phone number: $phone_number (should be at least 6 digits, numbers only)"
         exit 1
     fi
-    
-    log_success "Parameter validation passed"
 }
 
 # Function to generate base64url encoding (JWT compliant)
@@ -367,7 +365,7 @@ check_or_create_bootstrap_admin() {
         WHERE ar.code = 'ca_super_user';
     "
     
-    PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -c "$permissions_sql"
+    PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -q -c "$permissions_sql"
     
     local permissions_count=$(PGPASSWORD="$API_DB_PASSWORD" psql -h "$db_host" -p "${API_DB_PORT:-5433}" -U "$API_DB_USERNAME" -d "$API_DB_NAME" -t -c \
         "SELECT COUNT(*) FROM au_authority_permission WHERE authority_id = $authority_id" 2>/dev/null | xargs)

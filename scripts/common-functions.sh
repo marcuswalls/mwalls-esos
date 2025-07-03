@@ -130,7 +130,6 @@ wsl_translate_url() {
         # Replace http://host.docker.internal with http://localhost
         # Handle optional port numbers (e.g., :443, :80)
         echo "$url" | sed -E 's|https?://host\.docker\.internal(:[0-9]+)?|http://localhost|g'
-        log_debug "Translated URL from host.docker.internal to localhost: $url"
     else
         # Return URL unchanged if it doesn't contain host.docker.internal
         echo "$url"
